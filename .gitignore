@@ -6,3 +6,12 @@
 *.iml
 out
 gen
+/res/batemo_data/
+/utils/matlab/automateBatemoSim.asv
+/utils/matlab/Batemo_Model.slx
+/utils/matlab/Batemo_Model.slx.autosave
+/utils/matlab/Batemo_Model.slxc
+/utils/matlab/batemo_model_data.csv
+/utils/matlab/Copy_of_extractToExcel.asv
+/utils/matlab/Molicel_INR21700P45B_221c01110_vs_msp.mexw64
+/utils/matlab/slprj/
