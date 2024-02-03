@@ -11,7 +11,7 @@ T = table();
 Time = 10000;
 
 % Define SOH data - % Aged (from 100-80% SOH)
-SOH = 16:1:50;
+SOH = 25:1:30;
 
 % Define Current data
 Current_data = -40:1:40;
