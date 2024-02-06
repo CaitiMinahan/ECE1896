@@ -14,7 +14,7 @@ Time = 10000;
 SOH = 0:1:30;
 
 % Define Current data
-Current_data = 41:1:55;
+Current_data = -55:1:-41;
 
 % Start Timer
 tic;
