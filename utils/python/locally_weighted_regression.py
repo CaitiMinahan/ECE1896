@@ -3,7 +3,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # TODO: look up how to reference the csv given bus values for V and I as well as SOH from model for predicting SOC
-# TODO: How to round array values to 3 decimal places
 # TODO: What is the best K value to use for the locally weighted regression
 # TODO: How to compress the output for microcontroller use
 
@@ -66,18 +65,18 @@ for i in range(90,91):
 
         # append the data to a csv
         export = pd.DataFrame()
-        export['V'] = round(colA,3)
+        export['V'] = colA.round(3)
         export['I'] = j
         export['SOH'] = i
-        export['SOC'] = round(ypred,3)
+        export['SOC'] = np.round(ypred,3)
         export.to_csv('new csv.csv', mode='a', header=False)
 
-        # xsort = X.copy()
-        # xsort.sort(axis=0)
-        # plt.scatter(colA, colB, color='blue')
-        # #                V           SOC
-        # plt.plot(xsort[:, 1], ypred[X[:, 1].argsort(0)], color='yellow', linewidth=5)
-        # plt.xlabel('V')
-        # plt.ylabel('SOC')
-        # plt.show()
+        xsort = X.copy()
+        xsort.sort(axis=0)
+        plt.scatter(colA, colB, color='blue')
+        #                V           SOC
+        plt.plot(xsort[:, 1], ypred[X[:, 1].argsort(0)], color='yellow', linewidth=5)
+        plt.xlabel('V')
+        plt.ylabel('SOC')
+        plt.show()
 
