@@ -12,9 +12,8 @@ try:
         # Read data from serial port
         data = ser.readline().strip().decode('utf-8')
 
-        # Check if the button is pressed
-        if data == "Button Pressed":
-            print("Button pressed!")
+        # Print the data
+        print(data)
 
 except KeyboardInterrupt:
     # Close the serial port when Ctrl+C is pressed
