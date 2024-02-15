@@ -16,8 +16,50 @@ import serial
 
 QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
 
+from PyQt5.QtWidgets import QDialog, QComboBox, QVBoxLayout, QPushButton
+import serial.tools.list_ports
+
+class COMPortDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        self.setWindowTitle("Select COM Port and Baud Rate")
+
+        self.layout = QVBoxLayout(self)
+
+        self.comboBox = QComboBox(self)
+        self.layout.addWidget(self.comboBox)
+
+        self.baudRateComboBox = QComboBox(self)
+        self.baudRateComboBox.addItems(['9600', '14400', '19200', '38400', '57600', '115200'])
+        self.layout.addWidget(self.baudRateComboBox)
+
+        self.okButton = QPushButton("OK", self)
+        self.okButton.clicked.connect(self.accept)
+        self.layout.addWidget(self.okButton)
+
+        self.populate_com_ports()
+
+    def populate_com_ports(self):
+        com_ports = serial.tools.list_ports.comports()
+        for port in com_ports:
+            self.comboBox.addItem(port.device)
+
+    def get_selected_com_port(self):
+        return self.comboBox.currentText()
+
+    def get_selected_baud_rate(self):
+        return self.baudRateComboBox.currentText()
+
 class Ui_BMS_Dashboard(QMainWindow):
     def setupUi(self):
+        dialog = COMPortDialog()
+        if dialog.exec_() == QDialog.Accepted:
+            selected_com_port = dialog.get_selected_com_port()
+            selected_baud_rate = int(dialog.get_selected_baud_rate())
+            self.serial_port = serial.Serial(selected_com_port, selected_baud_rate)  # Use the selected COM port and baud rate
+        else:
+            QApplication.quit()  # Close the program if no selection is made
         BMS_Dashboard.setObjectName("self")
         BMS_Dashboard.resize(1011, 948)
         self.BMS_Diagnostics_Dashboard_Title = QtWidgets.QTextBrowser(BMS_Dashboard)
@@ -642,7 +684,7 @@ class Ui_BMS_Dashboard(QMainWindow):
         self.timer = QtCore.QTimer()
         self.timer.timeout.connect(self.update)
         self.timer.start(100)  # Adjust the interval as needed
-        self.serial_port = serial.Serial('COM3', 9600)  # Open serial port
+        # self.serial_port = serial.Serial('COM3', 9600)  # Open serial port
 
     # TODO: add items to each of the dropdown menus
     # TODO: add under/over current to the faults section
