@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1011</width>
-    <height>948</height>
+    <width>455</width>
+    <height>801</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -43,7 +43,7 @@ p, li { white-space: pre-wrap; }
     </rect>
    </property>
    <property name="currentIndex">
-    <number>2</number>
+    <number>0</number>
    </property>
    <widget class="QWidget" name="tab">
     <attribute name="title">
@@ -644,7 +644,7 @@ p, li { white-space: pre-wrap; }
       <rect>
        <x>20</x>
        <y>270</y>
-       <width>91</width>
+       <width>81</width>
        <height>31</height>
       </rect>
      </property>
@@ -659,9 +659,9 @@ p, li { white-space: pre-wrap; }
     <widget class="QTextBrowser" name="CommFaultTitle">
      <property name="geometry">
       <rect>
-       <x>110</x>
+       <x>310</x>
        <y>270</y>
-       <width>101</width>
+       <width>81</width>
        <height>31</height>
       </rect>
      </property>
@@ -670,15 +670,15 @@ p, li { white-space: pre-wrap; }
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p align=&quot;center&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; font-weight:600; color:#de0000;&quot;&gt;Communication&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+&lt;p align=&quot;center&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; font-weight:600; color:#de0000;&quot;&gt;Comm&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
     </widget>
     <widget class="QTextBrowser" name="TempFaultTitle">
      <property name="geometry">
       <rect>
-       <x>300</x>
+       <x>240</x>
        <y>270</y>
-       <width>111</width>
+       <width>91</width>
        <height>31</height>
       </rect>
      </property>
@@ -693,9 +693,9 @@ p, li { white-space: pre-wrap; }
     <widget class="QTextBrowser" name="VoltageFaultTitle">
      <property name="geometry">
       <rect>
-       <x>210</x>
+       <x>170</x>
        <y>270</y>
-       <width>111</width>
+       <width>91</width>
        <height>31</height>
       </rect>
      </property>
@@ -707,12 +707,12 @@ p, li { white-space: pre-wrap; }
 &lt;p align=&quot;center&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:7pt; font-weight:600; color:#de0000;&quot;&gt;Under/Over Voltage&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
     </widget>
-    <widget class="QTextBrowser" name="ContactorStateBlockStatusOutput_2">
+    <widget class="QTextBrowser" name="PowerRailFaultOutput">
      <property name="geometry">
       <rect>
        <x>20</x>
        <y>300</y>
-       <width>91</width>
+       <width>81</width>
        <height>31</height>
       </rect>
      </property>
@@ -724,12 +724,12 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
     </widget>
-    <widget class="QTextBrowser" name="ContactorStateBlockStatusOutput_3">
+    <widget class="QTextBrowser" name="CurrentFaultOutput">
      <property name="geometry">
       <rect>
-       <x>110</x>
+       <x>100</x>
        <y>300</y>
-       <width>101</width>
+       <width>71</width>
        <height>31</height>
       </rect>
      </property>
@@ -741,12 +741,12 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
     </widget>
-    <widget class="QTextBrowser" name="ContactorStateBlockStatusOutput_4">
+    <widget class="QTextBrowser" name="VoltageFaultOutput">
      <property name="geometry">
       <rect>
-       <x>210</x>
+       <x>170</x>
        <y>300</y>
-       <width>91</width>
+       <width>71</width>
        <height>31</height>
       </rect>
      </property>
@@ -758,12 +758,12 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
     </widget>
-    <widget class="QTextBrowser" name="ContactorStateBlockStatusOutput_5">
+    <widget class="QTextBrowser" name="TempFaultOutput">
      <property name="geometry">
       <rect>
-       <x>300</x>
+       <x>240</x>
        <y>300</y>
-       <width>111</width>
+       <width>71</width>
        <height>31</height>
       </rect>
      </property>
@@ -778,7 +778,7 @@ p, li { white-space: pre-wrap; }
     <widget class="QCheckBox" name="PowerRailStatusGOOD">
      <property name="geometry">
       <rect>
-       <x>50</x>
+       <x>40</x>
        <y>330</y>
        <width>70</width>
        <height>17</height>
@@ -791,7 +791,59 @@ p, li { white-space: pre-wrap; }
     <widget class="QCheckBox" name="PowerRailStatusBAD">
      <property name="geometry">
       <rect>
-       <x>50</x>
+       <x>40</x>
+       <y>350</y>
+       <width>70</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>BAD</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="CurrentStatusGOOD">
+     <property name="geometry">
+      <rect>
+       <x>120</x>
+       <y>330</y>
+       <width>70</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>GOOD</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="CurrentStatusBAD">
+     <property name="geometry">
+      <rect>
+       <x>120</x>
+       <y>350</y>
+       <width>70</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>BAD</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="TempStatusGOOD_2">
+     <property name="geometry">
+      <rect>
+       <x>260</x>
+       <y>330</y>
+       <width>70</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>GOOD</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="TempStatusBAD_2">
+     <property name="geometry">
+      <rect>
+       <x>260</x>
        <y>350</y>
        <width>70</width>
        <height>17</height>
@@ -804,58 +856,6 @@ p, li { white-space: pre-wrap; }
     <widget class="QCheckBox" name="CommStatusGOOD">
      <property name="geometry">
       <rect>
-       <x>140</x>
-       <y>330</y>
-       <width>70</width>
-       <height>17</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>GOOD</string>
-     </property>
-    </widget>
-    <widget class="QCheckBox" name="CommStatusBAD">
-     <property name="geometry">
-      <rect>
-       <x>140</x>
-       <y>350</y>
-       <width>70</width>
-       <height>17</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>BAD</string>
-     </property>
-    </widget>
-    <widget class="QCheckBox" name="VoltageStatusGOOD">
-     <property name="geometry">
-      <rect>
-       <x>240</x>
-       <y>330</y>
-       <width>70</width>
-       <height>17</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>GOOD</string>
-     </property>
-    </widget>
-    <widget class="QCheckBox" name="VoltageStatusBAD">
-     <property name="geometry">
-      <rect>
-       <x>240</x>
-       <y>350</y>
-       <width>70</width>
-       <height>17</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>BAD</string>
-     </property>
-    </widget>
-    <widget class="QCheckBox" name="TempStatusGOOD">
-     <property name="geometry">
-      <rect>
        <x>330</x>
        <y>330</y>
        <width>70</width>
@@ -866,7 +866,7 @@ p, li { white-space: pre-wrap; }
       <string>GOOD</string>
      </property>
     </widget>
-    <widget class="QCheckBox" name="TempStatusBAD">
+    <widget class="QCheckBox" name="CommStatusBAD">
      <property name="geometry">
       <rect>
        <x>330</x>
@@ -897,6 +897,66 @@ p, li { white-space: pre-wrap; }
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+    </widget>
+    <widget class="QTextBrowser" name="CurrentFaultTitle">
+     <property name="geometry">
+      <rect>
+       <x>100</x>
+       <y>270</y>
+       <width>91</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="html">
+      <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:7pt; font-weight:600; color:#de0000;&quot;&gt;Under/Over Current&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+    </widget>
+    <widget class="QTextBrowser" name="CommFaultOutput">
+     <property name="geometry">
+      <rect>
+       <x>310</x>
+       <y>300</y>
+       <width>81</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="html">
+      <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="VoltageStatusGOOD">
+     <property name="geometry">
+      <rect>
+       <x>200</x>
+       <y>330</y>
+       <width>51</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>GOOD</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="VoltageStatusBAD">
+     <property name="geometry">
+      <rect>
+       <x>200</x>
+       <y>350</y>
+       <width>51</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>BAD</string>
      </property>
     </widget>
     <zorder>ForceAreaMAIN_5</zorder>
@@ -938,22 +998,26 @@ p, li { white-space: pre-wrap; }
     <zorder>ControlsBoxTitle</zorder>
     <zorder>cellDropDownMenu</zorder>
     <zorder>PowerRailFaultTitle</zorder>
-    <zorder>CommFaultTitle</zorder>
-    <zorder>VoltageFaultTitle</zorder>
-    <zorder>TempFaultTitle</zorder>
-    <zorder>ContactorStateBlockStatusOutput_2</zorder>
-    <zorder>ContactorStateBlockStatusOutput_3</zorder>
-    <zorder>ContactorStateBlockStatusOutput_4</zorder>
-    <zorder>ContactorStateBlockStatusOutput_5</zorder>
+    <zorder>PowerRailFaultOutput</zorder>
+    <zorder>CurrentFaultOutput</zorder>
+    <zorder>VoltageFaultOutput</zorder>
+    <zorder>TempFaultOutput</zorder>
     <zorder>PowerRailStatusGOOD</zorder>
     <zorder>PowerRailStatusBAD</zorder>
+    <zorder>CurrentStatusGOOD</zorder>
+    <zorder>CurrentStatusBAD</zorder>
+    <zorder>TempStatusGOOD_2</zorder>
+    <zorder>TempStatusBAD_2</zorder>
     <zorder>CommStatusGOOD</zorder>
     <zorder>CommStatusBAD</zorder>
+    <zorder>CurrentCellNumberBox</zorder>
+    <zorder>CurrentFaultTitle</zorder>
+    <zorder>VoltageFaultTitle</zorder>
+    <zorder>TempFaultTitle</zorder>
+    <zorder>CommFaultTitle</zorder>
+    <zorder>CommFaultOutput</zorder>
     <zorder>VoltageStatusGOOD</zorder>
     <zorder>VoltageStatusBAD</zorder>
-    <zorder>TempStatusGOOD</zorder>
-    <zorder>TempStatusBAD</zorder>
-    <zorder>CurrentCellNumberBox</zorder>
    </widget>
    <widget class="QWidget" name="tab_2">
     <attribute name="title">
