@@ -61,7 +61,7 @@ class Ui_BMS_Dashboard(QMainWindow):
         else:
             QApplication.quit()  # Close the program if no selection is made
         BMS_Dashboard.setObjectName("self")
-        BMS_Dashboard.resize(1011, 948)
+        BMS_Dashboard.resize(455, 801)
         self.BMS_Diagnostics_Dashboard_Title = QtWidgets.QTextBrowser(BMS_Dashboard)
         self.BMS_Diagnostics_Dashboard_Title.setGeometry(QtCore.QRect(0, 0, 451, 31))
         self.BMS_Diagnostics_Dashboard_Title.setAutoFillBackground(False)
@@ -185,7 +185,7 @@ class Ui_BMS_Dashboard(QMainWindow):
         self.ControlsBoxTitle.setObjectName("ControlsBoxTitle")
         self.cellDropDownMenu = QtWidgets.QComboBox(self.tab)
         self.cellDropDownMenu.setGeometry(QtCore.QRect(160, 680, 121, 22))
-        self.cellDropDownMenu.setEditable(True)
+        self.cellDropDownMenu.setEditable(False)
         self.cellDropDownMenu.setObjectName("cellDropDownMenu")
         self.PowerRailFaultTitle = QtWidgets.QTextBrowser(self.tab)
         self.PowerRailFaultTitle.setGeometry(QtCore.QRect(20, 270, 91, 31))
@@ -300,7 +300,7 @@ class Ui_BMS_Dashboard(QMainWindow):
         self.moduleDropDownMenu = QtWidgets.QComboBox(self.tab_2)
         self.moduleDropDownMenu.setGeometry(QtCore.QRect(150, 590, 141, 22))
         self.moduleDropDownMenu.setAcceptDrops(False)
-        self.moduleDropDownMenu.setEditable(True)
+        self.moduleDropDownMenu.setEditable(False)
         self.moduleDropDownMenu.setObjectName("moduleDropDownMenu")
         self.Cell_1_BalancingVoltage = QtWidgets.QTextBrowser(self.tab_2)
         self.Cell_1_BalancingVoltage.setGeometry(QtCore.QRect(30, 90, 111, 31))
@@ -465,7 +465,7 @@ class Ui_BMS_Dashboard(QMainWindow):
         self.slaveDropDownMenu = QtWidgets.QComboBox(self.tab_3)
         self.slaveDropDownMenu.setGeometry(QtCore.QRect(160, 600, 131, 22))
         self.slaveDropDownMenu.setAcceptDrops(False)
-        self.slaveDropDownMenu.setEditable(True)
+        self.slaveDropDownMenu.setEditable(False)
         self.slaveDropDownMenu.setObjectName("slaveDropDownMenu")
         self.CurrentSlaveNumberBox = QtWidgets.QTextEdit(self.tab_3)
         self.CurrentSlaveNumberBox.setEnabled(False)
@@ -686,10 +686,37 @@ class Ui_BMS_Dashboard(QMainWindow):
         self.timer.start(100)  # Adjust the interval as needed
         # self.serial_port = serial.Serial('COM3', 9600)  # Open serial port
 
-    # TODO: add items to each of the dropdown menus
-    # TODO: add under/over current to the faults section
-    # TODO: make window size smaller
+        # add elements to the dropdown menus
+        self.cellDropDownMenu.addItems(["Select Cell To View", "cell 1", "cell 2", "cell 3", "cell 4", "cell 5", "cell 6", "cell 7", "cell 8", "cell 9", "cell 10", "cell 11", "cell 12"])
+        self.moduleDropDownMenu.addItems(["Select Module To View", "module 1", "module 2", "module 3", "module 4"]) # adding multiple modules for scalability. don't know how many we eventually want
+        self.slaveDropDownMenu.addItems(["Select Slave To View", "slave 1", "slave 2", "slave 3"])
 
+        # Connect the currentIndexChanged signal of the combo box to your slot
+        self.cellDropDownMenu.currentIndexChanged.connect(self.on_cell_dropdown_changed)
+        self.moduleDropDownMenu.currentIndexChanged.connect(self.on_module_dropdown_changed)
+        self.slaveDropDownMenu.currentIndexChanged.connect(self.on_slave_dropdown_changed)
+
+    # update the GUI according to what is selected from the dropdowns
+    def on_cell_dropdown_changed(self):
+        # Get the currently selected item from the combo box
+        selected_item = self.cellDropDownMenu.currentText()
+        # Update your page according to the selected item
+        current_text = self.CurrentCellNumberBox.toPlainText()
+        self.CurrentCellNumberBox.setPlainText(current_text + selected_item)
+    def on_module_dropdown_changed(self):
+        # Get the currently selected item from the combo box
+        selected_item = self.moduleDropDownMenu.currentText()
+        # Update your page according to the selected item
+        current_text = self.CurrentModuleNumberBox.toPlainText()
+        self.CurrentModuleNumberBox.setPlainText(current_text + selected_item)
+    def on_slave_dropdown_changed(self):
+        # Get the currently selected item from the combo box
+        selected_item = self.slaveDropDownMenu.currentText()
+        # Update your page according to the selected item
+        current_text = self.CurrentSlaveNumberBox.toPlainText()
+        self.CurrentSlaveNumberBox.setPlainText(current_text + selected_item)
+
+    # TODO: add under/over current to the faults section
 
     # update the GUI with latest diagnostics (values read from STM32)
     def update(self):
