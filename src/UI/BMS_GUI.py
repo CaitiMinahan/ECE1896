@@ -743,6 +743,9 @@ class Ui_BMS_Dashboard(QMainWindow):
             current_text = self.CriticalFaultsResultBox.toPlainText()
             self.CriticalFaultsResultBox.setPlainText(current_text + data + '\n')
 
+        # TODO: need to parse the input data to distinguish what type of variable we are reading in (i.e., SOC/SOH, measured V,I,T, fault/flag, etc.)
+        # TODO: might be easier to create separate functions for parsing the input data and then setting conditions according to the bits set
+
         # UPDATES FOR THE CELL VIEW TAB
         # TODO: update measure cell voltage (CellVoltageResultBox) according to the cell selected
             # NOTE: this is a TEST, i will need to change this output later
