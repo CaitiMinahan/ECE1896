@@ -71,9 +71,9 @@ class Ui_BMS_Dashboard(QMainWindow):
         self.Segment_1_Voltage.setObjectName("Segment_1_Voltage")
         self.tab = QtWidgets.QWidget()
         self.tab.setObjectName("tab")
-        self.BeaconResultBoxMAIN = QtWidgets.QTextBrowser(self.tab)
-        self.BeaconResultBoxMAIN.setGeometry(QtCore.QRect(20, 100, 111, 51))
-        self.BeaconResultBoxMAIN.setObjectName("BeaconResultBoxMAIN")
+        self.CellVoltageResultBox = QtWidgets.QTextBrowser(self.tab)
+        self.CellVoltageResultBox.setGeometry(QtCore.QRect(20, 100, 111, 51))
+        self.CellVoltageResultBox.setObjectName("CellVoltageResultBox")
         self.VolatgeBackground = QtWidgets.QMdiArea(self.tab)
         self.VolatgeBackground.setGeometry(QtCore.QRect(10, 80, 131, 81))
         self.VolatgeBackground.setObjectName("VolatgeBackground")
@@ -89,9 +89,9 @@ class Ui_BMS_Dashboard(QMainWindow):
         self.label_6 = QtWidgets.QLabel(self.tab)
         self.label_6.setGeometry(QtCore.QRect(160, 80, 111, 16))
         self.label_6.setObjectName("label_6")
-        self.BeaconResultBoxMAIN_2 = QtWidgets.QTextBrowser(self.tab)
-        self.BeaconResultBoxMAIN_2.setGeometry(QtCore.QRect(160, 100, 111, 51))
-        self.BeaconResultBoxMAIN_2.setObjectName("BeaconResultBoxMAIN_2")
+        self.CellCurrentResultBox = QtWidgets.QTextBrowser(self.tab)
+        self.CellCurrentResultBox.setGeometry(QtCore.QRect(160, 100, 111, 51))
+        self.CellCurrentResultBox.setObjectName("CellCurrentResultBox")
         self.TempBackground = QtWidgets.QMdiArea(self.tab)
         self.TempBackground.setGeometry(QtCore.QRect(290, 80, 131, 81))
         self.TempBackground.setObjectName("TempBackground")
@@ -104,9 +104,9 @@ class Ui_BMS_Dashboard(QMainWindow):
         self.CurrentBackground = QtWidgets.QMdiArea(self.tab)
         self.CurrentBackground.setGeometry(QtCore.QRect(150, 80, 131, 81))
         self.CurrentBackground.setObjectName("CurrentBackground")
-        self.BeaconResultBoxMAIN_3 = QtWidgets.QTextBrowser(self.tab)
-        self.BeaconResultBoxMAIN_3.setGeometry(QtCore.QRect(300, 100, 111, 51))
-        self.BeaconResultBoxMAIN_3.setObjectName("BeaconResultBoxMAIN_3")
+        self.CellTempResultBox = QtWidgets.QTextBrowser(self.tab)
+        self.CellTempResultBox.setGeometry(QtCore.QRect(300, 100, 111, 51))
+        self.CellTempResultBox.setObjectName("CellTempResultBox")
         self.label_8 = QtWidgets.QLabel(self.tab)
         self.label_8.setGeometry(QtCore.QRect(20, 200, 111, 16))
         self.label_8.setObjectName("label_8")
@@ -256,14 +256,14 @@ class Ui_BMS_Dashboard(QMainWindow):
         self.CriticalFaultsBlockBackground.raise_()
         self.TempBackground.raise_()
         self.CellTempBlockTitle.raise_()
-        self.BeaconResultBoxMAIN_3.raise_()
+        self.CellTempResultBox.raise_()
         self.CurrentBackground.raise_()
         self.label_7.raise_()
         self.CellCurrentBlockTitle.raise_()
-        self.BeaconResultBoxMAIN_2.raise_()
+        self.CellCurrentResultBox.raise_()
         self.label_6.raise_()
         self.VolatgeBackground.raise_()
-        self.BeaconResultBoxMAIN.raise_()
+        self.CellVoltageResultBox.raise_()
         self.label_5.raise_()
         self.CellVoltageBlockTitle.raise_()
         self.label_8.raise_()
@@ -732,8 +732,6 @@ class Ui_BMS_Dashboard(QMainWindow):
         current_text = self.CurrentSlaveNumberBox.toPlainText()
         self.CurrentSlaveNumberBox.setPlainText(current_text + selected_item)
 
-    # TODO: add under/over current to the faults section
-
     # update the GUI with latest diagnostics (values read from STM32)
     def update(self):
         _translate = QtCore.QCoreApplication.translate
@@ -744,6 +742,52 @@ class Ui_BMS_Dashboard(QMainWindow):
             # Append data to the existing text
             current_text = self.CriticalFaultsResultBox.toPlainText()
             self.CriticalFaultsResultBox.setPlainText(current_text + data + '\n')
+
+        # UPDATES FOR THE CELL VIEW TAB
+        # TODO: update measure cell voltage (CellVoltageResultBox) according to the cell selected
+            # NOTE: this is a TEST, i will need to change this output later
+            current_cell = self.CurrentCellNumberBox.toPlainText()
+            if current_cell == "cell 1":
+                self.CellVoltageResultBox.setPlainText("voltage for:" + current_cell)
+        # TODO: update measure cell current (CellCurrentResultBox) according to the cell selected
+            # NOTE: this is a TEST, i will need to change this output later
+            elif current_cell == "cell 2":
+                self.CellVoltageResultBox.setPlainText("voltage for cell:" + current_cell)
+        # TODO: update measure cell temp (CellTempResultBox) according to the cell selected
+
+        # TODO: update the CriticalFaultsResultBox when a fault is generated according to the cell selected
+        # TODO: check boxes for each fault category depending on the state (good by default)
+
+        # TODO: update the StateOfChargeResult according to the cell selected
+        # TODO: update the StateOfHealthResult according to the cell selected
+        # TODO: update the StateOfPowerResult according to the cell selected
+
+        # TODO: update the ContactorStateBlockStatusOutput according to the cell selected
+        # TODO: update the ManualAutomaticStateBlockStatusOutput according to the cell selected
+        # TODO: update the BalancingStateBlockStatusOutput according to the cell selected
+        # TODO: update the BMSOperationsStateBlockStatusOutput according to the cell selected
+        # TODO: update the ChargeControlStatusStateBlockStatusOutput according to the cell selected
+
+        # NOTE: the input values will be specific to the cell, so it needs to be in a form which specifies the module, cell, and value
+        #   NOTE: for example, reading in the voltage of cell 1 for module 1 would need to be of the form: moduleVal_cellVal_voltageVal
+        #   NOTE: this same data format for the input needs to be consistent for V, I, T, faults, state monitoring, and SOC/SOH/SOP
+
+        # UPDATES FOR THE PACK VIEW TAB
+        # TODO: update the (Cell_1_BalancingVoltage-Cell_12_BalancingVoltage) according to the module selected
+        # TODO: update the (Cell_1_BalancingCurrent-Cell_12_BalancingCurrent) according to the module selected
+        # TODO: update the (Cell_1_BalancingTemp-Cell_12_BalancingTemp) according to the module selected
+
+        # NOTE: the input values will be specific to the module, so it needs to be in a form which specifies the module, cell, and value
+        #   NOTE: for example, reading in the voltage of cell 1 for module 1 would need to be of the form: moduleVal_cellVal_voltageVal
+        #   NOTE: the output boxes will show a pack view of all the cell's V, I and T according to the specific module
+
+        # UPDATES FOR THE SLAVE BOARD VIEW TAB
+        # TODO: update the (Segment_1_Voltage_2-Segment_16_Voltage) according to the slave selected
+        # TODO: update the (Segment_1_Temp-Segment_16_Temp) according to the slave selected
+
+        # NOTE: the input values will be specific to the slave, so it needs to be in a form which specifies the slave, segment, and value
+        #   NOTE: for example, reading in the voltage of segment 1 for slave 1 would need to be of the form: slaveVal_segmentVal_voltageVal
+        #   NOTE: the output boxes will show a grid view of all the segment's V and T according to the specific slave (1-3)
 
     # handler function for setting the refresh rate of the GUI
     def _handler(self):
@@ -761,7 +805,7 @@ class Ui_BMS_Dashboard(QMainWindow):
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
 "<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Segoe UI Emoji,sans-serif\'; font-size:11pt;\">🔋 </span><span style=\" font-size:11pt; font-weight:600;\">BMS Diagnostics Dashboard </span><span style=\" font-family:\'Segoe UI Emoji,sans-serif\'; font-size:11pt;\">🔋</span></p></body></html>"))
-        self.BeaconResultBoxMAIN.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+        self.CellVoltageResultBox.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
@@ -778,7 +822,7 @@ class Ui_BMS_Dashboard(QMainWindow):
 "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
 "<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Segoe UI Emoji,sans-serif\'; font-size:9pt;\">🌡️ </span><span style=\" font-size:9pt; color:#00007f;\">Temperature (F) </span><span style=\" font-family:\'Segoe UI Emoji,sans-serif\'; font-size:9pt;\">🌡️</span></p></body></html>"))
         self.label_6.setText(_translate("BMS_Dashboard", "Measured Cell Current"))
-        self.BeaconResultBoxMAIN_2.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+        self.CellCurrentResultBox.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
@@ -789,7 +833,7 @@ class Ui_BMS_Dashboard(QMainWindow):
 "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
 "<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Segoe UI Emoji,sans-serif\'; font-size:9pt;\">🔌 </span><span style=\" font-size:9pt; color:#00007f;\">Current (A) </span><span style=\" font-family:\'Segoe UI Emoji,sans-serif\'; font-size:9pt;\">🔌</span></p></body></html>"))
         self.label_7.setText(_translate("BMS_Dashboard", "Measured Cell Temp"))
-        self.BeaconResultBoxMAIN_3.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+        self.CellTempResultBox.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
