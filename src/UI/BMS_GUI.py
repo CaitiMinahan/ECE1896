@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'BMS_GUI.ui'
+# Form implementation generated from reading ui file 'BMS_GUI-Copy.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.9
 #
@@ -16,176 +16,681 @@ import serial
 
 QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
 
+from PyQt5.QtWidgets import QDialog, QComboBox, QVBoxLayout, QPushButton
+import serial.tools.list_ports
+
+class COMPortDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        self.setWindowTitle("Select COM Port and Baud Rate")
+
+        self.layout = QVBoxLayout(self)
+
+        self.comboBox = QComboBox(self)
+        self.layout.addWidget(self.comboBox)
+
+        self.baudRateComboBox = QComboBox(self)
+        self.baudRateComboBox.addItems(['9600', '14400', '19200', '38400', '57600', '115200'])
+        self.layout.addWidget(self.baudRateComboBox)
+
+        self.okButton = QPushButton("OK", self)
+        self.okButton.clicked.connect(self.accept)
+        self.layout.addWidget(self.okButton)
+
+        self.populate_com_ports()
+
+    def populate_com_ports(self):
+        com_ports = serial.tools.list_ports.comports()
+        for port in com_ports:
+            self.comboBox.addItem(port.device)
+
+    def get_selected_com_port(self):
+        return self.comboBox.currentText()
+
+    def get_selected_baud_rate(self):
+        return self.baudRateComboBox.currentText()
+
 class Ui_BMS_Dashboard(QMainWindow):
-
     def setupUi(self):
-
-        self.setObjectName("self")
-        self.resize(432, 574)
+        dialog = COMPortDialog()
+        if dialog.exec_() == QDialog.Accepted:
+            selected_com_port = dialog.get_selected_com_port()
+            selected_baud_rate = int(dialog.get_selected_baud_rate())
+            self.serial_port = serial.Serial(selected_com_port, selected_baud_rate)  # Use the selected COM port and baud rate
+        else:
+            QApplication.quit()  # Close the program if no selection is made
+        BMS_Dashboard.setObjectName("self")
+        BMS_Dashboard.resize(455, 801)
         self.BMS_Diagnostics_Dashboard_Title = QtWidgets.QTextBrowser(BMS_Dashboard)
-        self.BMS_Diagnostics_Dashboard_Title.setGeometry(QtCore.QRect(0, 0, 431, 31))
+        self.BMS_Diagnostics_Dashboard_Title.setGeometry(QtCore.QRect(0, 0, 451, 31))
         self.BMS_Diagnostics_Dashboard_Title.setAutoFillBackground(False)
         self.BMS_Diagnostics_Dashboard_Title.setObjectName("BMS_Diagnostics_Dashboard_Title")
-        self.CellVoltageBlockTitle = QtWidgets.QTextBrowser(BMS_Dashboard)
-        self.CellVoltageBlockTitle.setGeometry(QtCore.QRect(10, 40, 131, 31))
-        self.CellVoltageBlockTitle.setObjectName("CellVoltageBlockTitle")
-        self.label_5 = QtWidgets.QLabel(BMS_Dashboard)
-        self.label_5.setGeometry(QtCore.QRect(20, 70, 111, 16))
-        self.label_5.setObjectName("label_5")
-        self.VolatgeBackground = QtWidgets.QMdiArea(BMS_Dashboard)
-        self.VolatgeBackground.setGeometry(QtCore.QRect(10, 70, 131, 81))
-        self.VolatgeBackground.setObjectName("VolatgeBackground")
-        self.label_6 = QtWidgets.QLabel(BMS_Dashboard)
-        self.label_6.setGeometry(QtCore.QRect(160, 70, 111, 16))
-        self.label_6.setObjectName("label_6")
-        self.CellCurrentBlockTitle = QtWidgets.QTextBrowser(BMS_Dashboard)
-        self.CellCurrentBlockTitle.setGeometry(QtCore.QRect(150, 40, 131, 31))
-        self.CellCurrentBlockTitle.setObjectName("CellCurrentBlockTitle")
-        self.CurrentBackground = QtWidgets.QMdiArea(BMS_Dashboard)
-        self.CurrentBackground.setGeometry(QtCore.QRect(150, 70, 131, 81))
-        self.CurrentBackground.setObjectName("CurrentBackground")
-        self.label_7 = QtWidgets.QLabel(BMS_Dashboard)
-        self.label_7.setGeometry(QtCore.QRect(300, 70, 111, 16))
-        self.label_7.setObjectName("label_7")
-        self.CellTempBlockTitle = QtWidgets.QTextBrowser(BMS_Dashboard)
-        self.CellTempBlockTitle.setGeometry(QtCore.QRect(290, 40, 131, 31))
-        self.CellTempBlockTitle.setObjectName("CellTempBlockTitle")
-        self.TempBackground = QtWidgets.QMdiArea(BMS_Dashboard)
-        self.TempBackground.setGeometry(QtCore.QRect(290, 70, 131, 81))
-        self.TempBackground.setObjectName("TempBackground")
-        self.CriticalFaultsBlockTitle = QtWidgets.QTextBrowser(BMS_Dashboard)
-        self.CriticalFaultsBlockTitle.setGeometry(QtCore.QRect(10, 160, 411, 31))
-        self.CriticalFaultsBlockTitle.setObjectName("CriticalFaultsBlockTitle")
-        self.CriticalFaultsBlockBackground = QtWidgets.QMdiArea(BMS_Dashboard)
-        self.CriticalFaultsBlockBackground.setGeometry(QtCore.QRect(10, 190, 411, 81))
-        self.CriticalFaultsBlockBackground.setObjectName("CriticalFaultsBlockBackground")
-        self.label_8 = QtWidgets.QLabel(BMS_Dashboard)
-        self.label_8.setGeometry(QtCore.QRect(20, 190, 111, 16))
-        self.label_8.setObjectName("label_8")
-        self.CriticalFaultsResultBox = QtWidgets.QTextEdit(BMS_Dashboard)
-        self.CriticalFaultsResultBox.setEnabled(False)
-        self.CriticalFaultsResultBox.setGeometry(QtCore.QRect(20, 210, 391, 51))
-        self.CriticalFaultsResultBox.setObjectName("CriticalFaultsResultBox")
-        self.BeaconResultBoxMAIN = QtWidgets.QTextBrowser(BMS_Dashboard)
-        self.BeaconResultBoxMAIN.setGeometry(QtCore.QRect(20, 90, 111, 51))
+        self.Segment_1_Voltage = QtWidgets.QTabWidget(BMS_Dashboard)
+        self.Segment_1_Voltage.setGeometry(QtCore.QRect(10, 50, 441, 741))
+        self.Segment_1_Voltage.setObjectName("Segment_1_Voltage")
+        self.tab = QtWidgets.QWidget()
+        self.tab.setObjectName("tab")
+        self.BeaconResultBoxMAIN = QtWidgets.QTextBrowser(self.tab)
+        self.BeaconResultBoxMAIN.setGeometry(QtCore.QRect(20, 100, 111, 51))
         self.BeaconResultBoxMAIN.setObjectName("BeaconResultBoxMAIN")
-        self.BeaconResultBoxMAIN_2 = QtWidgets.QTextBrowser(BMS_Dashboard)
-        self.BeaconResultBoxMAIN_2.setGeometry(QtCore.QRect(160, 90, 111, 51))
+        self.VolatgeBackground = QtWidgets.QMdiArea(self.tab)
+        self.VolatgeBackground.setGeometry(QtCore.QRect(10, 80, 131, 81))
+        self.VolatgeBackground.setObjectName("VolatgeBackground")
+        self.label_5 = QtWidgets.QLabel(self.tab)
+        self.label_5.setGeometry(QtCore.QRect(20, 80, 111, 16))
+        self.label_5.setObjectName("label_5")
+        self.CellVoltageBlockTitle = QtWidgets.QTextBrowser(self.tab)
+        self.CellVoltageBlockTitle.setGeometry(QtCore.QRect(10, 50, 131, 31))
+        self.CellVoltageBlockTitle.setObjectName("CellVoltageBlockTitle")
+        self.CellTempBlockTitle = QtWidgets.QTextBrowser(self.tab)
+        self.CellTempBlockTitle.setGeometry(QtCore.QRect(290, 50, 131, 31))
+        self.CellTempBlockTitle.setObjectName("CellTempBlockTitle")
+        self.label_6 = QtWidgets.QLabel(self.tab)
+        self.label_6.setGeometry(QtCore.QRect(160, 80, 111, 16))
+        self.label_6.setObjectName("label_6")
+        self.BeaconResultBoxMAIN_2 = QtWidgets.QTextBrowser(self.tab)
+        self.BeaconResultBoxMAIN_2.setGeometry(QtCore.QRect(160, 100, 111, 51))
         self.BeaconResultBoxMAIN_2.setObjectName("BeaconResultBoxMAIN_2")
-        self.BeaconResultBoxMAIN_3 = QtWidgets.QTextBrowser(BMS_Dashboard)
-        self.BeaconResultBoxMAIN_3.setGeometry(QtCore.QRect(300, 90, 111, 51))
+        self.TempBackground = QtWidgets.QMdiArea(self.tab)
+        self.TempBackground.setGeometry(QtCore.QRect(290, 80, 131, 81))
+        self.TempBackground.setObjectName("TempBackground")
+        self.CellCurrentBlockTitle = QtWidgets.QTextBrowser(self.tab)
+        self.CellCurrentBlockTitle.setGeometry(QtCore.QRect(150, 50, 131, 31))
+        self.CellCurrentBlockTitle.setObjectName("CellCurrentBlockTitle")
+        self.label_7 = QtWidgets.QLabel(self.tab)
+        self.label_7.setGeometry(QtCore.QRect(300, 80, 111, 16))
+        self.label_7.setObjectName("label_7")
+        self.CurrentBackground = QtWidgets.QMdiArea(self.tab)
+        self.CurrentBackground.setGeometry(QtCore.QRect(150, 80, 131, 81))
+        self.CurrentBackground.setObjectName("CurrentBackground")
+        self.BeaconResultBoxMAIN_3 = QtWidgets.QTextBrowser(self.tab)
+        self.BeaconResultBoxMAIN_3.setGeometry(QtCore.QRect(300, 100, 111, 51))
         self.BeaconResultBoxMAIN_3.setObjectName("BeaconResultBoxMAIN_3")
-        self.label_9 = QtWidgets.QLabel(BMS_Dashboard)
-        self.label_9.setGeometry(QtCore.QRect(20, 310, 111, 16))
-        self.label_9.setObjectName("label_9")
-        self.BeaconResultBoxMAIN_4 = QtWidgets.QTextBrowser(BMS_Dashboard)
-        self.BeaconResultBoxMAIN_4.setGeometry(QtCore.QRect(20, 330, 111, 51))
-        self.BeaconResultBoxMAIN_4.setObjectName("BeaconResultBoxMAIN_4")
-        self.SignalMonitoringBlockTitle = QtWidgets.QTextBrowser(BMS_Dashboard)
-        self.SignalMonitoringBlockTitle.setGeometry(QtCore.QRect(10, 280, 211, 31))
-        self.SignalMonitoringBlockTitle.setObjectName("SignalMonitoringBlockTitle")
-        self.ForceAreaMAIN_4 = QtWidgets.QMdiArea(BMS_Dashboard)
-        self.ForceAreaMAIN_4.setGeometry(QtCore.QRect(10, 310, 211, 251))
-        self.ForceAreaMAIN_4.setObjectName("ForceAreaMAIN_4")
-        self.StateMonitoringBlockTitle = QtWidgets.QTextBrowser(BMS_Dashboard)
-        self.StateMonitoringBlockTitle.setGeometry(QtCore.QRect(230, 280, 191, 31))
-        self.StateMonitoringBlockTitle.setObjectName("StateMonitoringBlockTitle")
-        self.StateOfChargeResult = QtWidgets.QTextBrowser(BMS_Dashboard)
-        self.StateOfChargeResult.setGeometry(QtCore.QRect(50, 350, 141, 41))
-        self.StateOfChargeResult.setObjectName("StateOfChargeResult")
-        self.StateOfChargeBlockTitle = QtWidgets.QTextBrowser(BMS_Dashboard)
-        self.StateOfChargeBlockTitle.setGeometry(QtCore.QRect(50, 320, 141, 31))
-        self.StateOfChargeBlockTitle.setObjectName("StateOfChargeBlockTitle")
-        self.StateOfHealthBlockTitle = QtWidgets.QTextBrowser(BMS_Dashboard)
-        self.StateOfHealthBlockTitle.setGeometry(QtCore.QRect(50, 400, 141, 31))
+        self.label_8 = QtWidgets.QLabel(self.tab)
+        self.label_8.setGeometry(QtCore.QRect(20, 200, 111, 16))
+        self.label_8.setObjectName("label_8")
+        self.CriticalFaultsResultBox = QtWidgets.QTextEdit(self.tab)
+        self.CriticalFaultsResultBox.setEnabled(False)
+        self.CriticalFaultsResultBox.setGeometry(QtCore.QRect(20, 220, 391, 41))
+        self.CriticalFaultsResultBox.setObjectName("CriticalFaultsResultBox")
+        self.CriticalFaultsBlockTitle = QtWidgets.QTextBrowser(self.tab)
+        self.CriticalFaultsBlockTitle.setGeometry(QtCore.QRect(10, 170, 411, 31))
+        self.CriticalFaultsBlockTitle.setObjectName("CriticalFaultsBlockTitle")
+        self.CriticalFaultsBlockBackground = QtWidgets.QMdiArea(self.tab)
+        self.CriticalFaultsBlockBackground.setGeometry(QtCore.QRect(10, 200, 411, 171))
+        self.CriticalFaultsBlockBackground.setObjectName("CriticalFaultsBlockBackground")
+        self.ChargeControlStatusStateBlockStatusOutput = QtWidgets.QTextBrowser(self.tab)
+        self.ChargeControlStatusStateBlockStatusOutput.setGeometry(QtCore.QRect(350, 620, 61, 41))
+        self.ChargeControlStatusStateBlockStatusOutput.setObjectName("ChargeControlStatusStateBlockStatusOutput")
+        self.BalancingStateBlockTitle = QtWidgets.QTextBrowser(self.tab)
+        self.BalancingStateBlockTitle.setGeometry(QtCore.QRect(240, 540, 101, 31))
+        self.BalancingStateBlockTitle.setObjectName("BalancingStateBlockTitle")
+        self.StateOfHealthBlockTitle = QtWidgets.QTextBrowser(self.tab)
+        self.StateOfHealthBlockTitle.setGeometry(QtCore.QRect(50, 500, 141, 31))
         self.StateOfHealthBlockTitle.setObjectName("StateOfHealthBlockTitle")
-        self.StateOfHealthResult = QtWidgets.QTextBrowser(BMS_Dashboard)
-        self.StateOfHealthResult.setGeometry(QtCore.QRect(50, 430, 141, 41))
-        self.StateOfHealthResult.setObjectName("StateOfHealthResult")
-        self.StateOfPowerBlockTitle = QtWidgets.QTextBrowser(BMS_Dashboard)
-        self.StateOfPowerBlockTitle.setGeometry(QtCore.QRect(50, 480, 141, 31))
-        self.StateOfPowerBlockTitle.setObjectName("StateOfPowerBlockTitle")
-        self.StateOfPowerResult = QtWidgets.QTextBrowser(BMS_Dashboard)
-        self.StateOfPowerResult.setGeometry(QtCore.QRect(50, 510, 141, 41))
-        self.StateOfPowerResult.setObjectName("StateOfPowerResult")
-        self.ForceAreaMAIN_5 = QtWidgets.QMdiArea(BMS_Dashboard)
-        self.ForceAreaMAIN_5.setGeometry(QtCore.QRect(230, 310, 191, 251))
+        self.ManualAutomaticStateBlockStatusOutput = QtWidgets.QTextBrowser(self.tab)
+        self.ManualAutomaticStateBlockStatusOutput.setGeometry(QtCore.QRect(350, 500, 61, 31))
+        self.ManualAutomaticStateBlockStatusOutput.setObjectName("ManualAutomaticStateBlockStatusOutput")
+        self.StateMonitoringBlockTitle = QtWidgets.QTextBrowser(self.tab)
+        self.StateMonitoringBlockTitle.setGeometry(QtCore.QRect(230, 380, 191, 31))
+        self.StateMonitoringBlockTitle.setObjectName("StateMonitoringBlockTitle")
+        self.BalancingStateBlockStatusOutput = QtWidgets.QTextBrowser(self.tab)
+        self.BalancingStateBlockStatusOutput.setGeometry(QtCore.QRect(350, 540, 61, 31))
+        self.BalancingStateBlockStatusOutput.setObjectName("BalancingStateBlockStatusOutput")
+        self.BMSOperationsStateBlockStatusOutput = QtWidgets.QTextBrowser(self.tab)
+        self.BMSOperationsStateBlockStatusOutput.setGeometry(QtCore.QRect(350, 580, 61, 31))
+        self.BMSOperationsStateBlockStatusOutput.setObjectName("BMSOperationsStateBlockStatusOutput")
+        self.ForceAreaMAIN_5 = QtWidgets.QMdiArea(self.tab)
+        self.ForceAreaMAIN_5.setGeometry(QtCore.QRect(230, 410, 191, 261))
         self.ForceAreaMAIN_5.setObjectName("ForceAreaMAIN_5")
-        self.ControlsBoxTitle = QtWidgets.QTextBrowser(BMS_Dashboard)
-        self.ControlsBoxTitle.setGeometry(QtCore.QRect(240, 320, 171, 31))
-        self.ControlsBoxTitle.setObjectName("ControlsBoxTitle")
-        self.ContactorStateBlockTitle = QtWidgets.QTextBrowser(BMS_Dashboard)
-        self.ContactorStateBlockTitle.setGeometry(QtCore.QRect(240, 360, 101, 31))
-        self.ContactorStateBlockTitle.setObjectName("ContactorStateBlockTitle")
-        self.ContactorStateBlockStatusOutput = QtWidgets.QTextBrowser(BMS_Dashboard)
-        self.ContactorStateBlockStatusOutput.setGeometry(QtCore.QRect(350, 360, 61, 31))
+        self.StateOfHealthResult = QtWidgets.QTextBrowser(self.tab)
+        self.StateOfHealthResult.setGeometry(QtCore.QRect(50, 530, 141, 41))
+        self.StateOfHealthResult.setObjectName("StateOfHealthResult")
+        self.StateOfChargeBlockTitle = QtWidgets.QTextBrowser(self.tab)
+        self.StateOfChargeBlockTitle.setGeometry(QtCore.QRect(50, 420, 141, 31))
+        self.StateOfChargeBlockTitle.setObjectName("StateOfChargeBlockTitle")
+        self.StateOfPowerBlockTitle = QtWidgets.QTextBrowser(self.tab)
+        self.StateOfPowerBlockTitle.setGeometry(QtCore.QRect(50, 580, 141, 31))
+        self.StateOfPowerBlockTitle.setObjectName("StateOfPowerBlockTitle")
+        self.SignalMonitoringBlockTitle = QtWidgets.QTextBrowser(self.tab)
+        self.SignalMonitoringBlockTitle.setGeometry(QtCore.QRect(10, 380, 211, 31))
+        self.SignalMonitoringBlockTitle.setObjectName("SignalMonitoringBlockTitle")
+        self.StateOfChargeResult = QtWidgets.QTextBrowser(self.tab)
+        self.StateOfChargeResult.setGeometry(QtCore.QRect(50, 450, 141, 41))
+        self.StateOfChargeResult.setObjectName("StateOfChargeResult")
+        self.BMSOperationsStateBlockTitle = QtWidgets.QTextBrowser(self.tab)
+        self.BMSOperationsStateBlockTitle.setGeometry(QtCore.QRect(240, 580, 101, 31))
+        self.BMSOperationsStateBlockTitle.setObjectName("BMSOperationsStateBlockTitle")
+        self.ContactorStateBlockStatusOutput = QtWidgets.QTextBrowser(self.tab)
+        self.ContactorStateBlockStatusOutput.setGeometry(QtCore.QRect(350, 460, 61, 31))
         self.ContactorStateBlockStatusOutput.setObjectName("ContactorStateBlockStatusOutput")
-        self.XX_1_StateBlockStatusOutput = QtWidgets.QTextBrowser(BMS_Dashboard)
-        self.XX_1_StateBlockStatusOutput.setGeometry(QtCore.QRect(350, 400, 61, 31))
-        self.XX_1_StateBlockStatusOutput.setObjectName("XX_1_StateBlockStatusOutput")
-        self.XX_1_StateBlockTitle = QtWidgets.QTextBrowser(BMS_Dashboard)
-        self.XX_1_StateBlockTitle.setGeometry(QtCore.QRect(240, 400, 101, 31))
-        self.XX_1_StateBlockTitle.setObjectName("XX_1_StateBlockTitle")
-        self.XX_2_StateBlockTitle = QtWidgets.QTextBrowser(BMS_Dashboard)
-        self.XX_2_StateBlockTitle.setGeometry(QtCore.QRect(240, 440, 101, 31))
-        self.XX_2_StateBlockTitle.setObjectName("XX_2_StateBlockTitle")
-        self.XX_2_StateBlockStatusOutput = QtWidgets.QTextBrowser(BMS_Dashboard)
-        self.XX_2_StateBlockStatusOutput.setGeometry(QtCore.QRect(350, 440, 61, 31))
-        self.XX_2_StateBlockStatusOutput.setObjectName("XX_2_StateBlockStatusOutput")
-        self.XX_3_StateBlockTitle = QtWidgets.QTextBrowser(BMS_Dashboard)
-        self.XX_3_StateBlockTitle.setGeometry(QtCore.QRect(240, 480, 101, 31))
-        self.XX_3_StateBlockTitle.setObjectName("XX_3_StateBlockTitle")
-        self.XX_3_StateBlockStatusOutput = QtWidgets.QTextBrowser(BMS_Dashboard)
-        self.XX_3_StateBlockStatusOutput.setGeometry(QtCore.QRect(350, 480, 61, 31))
-        self.XX_3_StateBlockStatusOutput.setObjectName("XX_3_StateBlockStatusOutput")
-        self.XX_4_StateBlockTitle = QtWidgets.QTextBrowser(BMS_Dashboard)
-        self.XX_4_StateBlockTitle.setGeometry(QtCore.QRect(240, 520, 101, 31))
-        self.XX_4_StateBlockTitle.setObjectName("XX_4_StateBlockTitle")
-        self.XX_4_StateBlockStatusOutput = QtWidgets.QTextBrowser(BMS_Dashboard)
-        self.XX_4_StateBlockStatusOutput.setGeometry(QtCore.QRect(350, 520, 61, 31))
-        self.XX_4_StateBlockStatusOutput.setObjectName("XX_4_StateBlockStatusOutput")
-        self.BMS_Diagnostics_Dashboard_Title.raise_()
-        self.VolatgeBackground.raise_()
-        self.CellVoltageBlockTitle.raise_()
-        self.label_5.raise_()
-        self.CurrentBackground.raise_()
-        self.label_6.raise_()
-        self.CellCurrentBlockTitle.raise_()
-        self.TempBackground.raise_()
-        self.label_7.raise_()
-        self.CellTempBlockTitle.raise_()
+        self.StateOfPowerResult = QtWidgets.QTextBrowser(self.tab)
+        self.StateOfPowerResult.setGeometry(QtCore.QRect(50, 610, 141, 41))
+        self.StateOfPowerResult.setObjectName("StateOfPowerResult")
+        self.ContactorStateBlockTitle = QtWidgets.QTextBrowser(self.tab)
+        self.ContactorStateBlockTitle.setGeometry(QtCore.QRect(240, 460, 101, 31))
+        self.ContactorStateBlockTitle.setObjectName("ContactorStateBlockTitle")
+        self.ChargeControlStatusStateBlockTitle = QtWidgets.QTextBrowser(self.tab)
+        self.ChargeControlStatusStateBlockTitle.setGeometry(QtCore.QRect(240, 620, 101, 41))
+        self.ChargeControlStatusStateBlockTitle.setObjectName("ChargeControlStatusStateBlockTitle")
+        self.ForceAreaMAIN_4 = QtWidgets.QMdiArea(self.tab)
+        self.ForceAreaMAIN_4.setGeometry(QtCore.QRect(10, 410, 211, 261))
+        self.ForceAreaMAIN_4.setObjectName("ForceAreaMAIN_4")
+        self.ManualAutomaticStateBlockTitle = QtWidgets.QTextBrowser(self.tab)
+        self.ManualAutomaticStateBlockTitle.setGeometry(QtCore.QRect(240, 500, 101, 31))
+        self.ManualAutomaticStateBlockTitle.setObjectName("ManualAutomaticStateBlockTitle")
+        self.ControlsBoxTitle = QtWidgets.QTextBrowser(self.tab)
+        self.ControlsBoxTitle.setGeometry(QtCore.QRect(240, 420, 171, 31))
+        self.ControlsBoxTitle.setObjectName("ControlsBoxTitle")
+        self.cellDropDownMenu = QtWidgets.QComboBox(self.tab)
+        self.cellDropDownMenu.setGeometry(QtCore.QRect(160, 680, 121, 22))
+        self.cellDropDownMenu.setEditable(False)
+        self.cellDropDownMenu.setObjectName("cellDropDownMenu")
+        self.PowerRailFaultTitle = QtWidgets.QTextBrowser(self.tab)
+        self.PowerRailFaultTitle.setGeometry(QtCore.QRect(20, 270, 91, 31))
+        self.PowerRailFaultTitle.setObjectName("PowerRailFaultTitle")
+        self.CommFaultTitle = QtWidgets.QTextBrowser(self.tab)
+        self.CommFaultTitle.setGeometry(QtCore.QRect(310, 270, 81, 31))
+        self.CommFaultTitle.setObjectName("CommFaultTitle")
+        self.TempFaultTitle = QtWidgets.QTextBrowser(self.tab)
+        self.TempFaultTitle.setGeometry(QtCore.QRect(240, 270, 91, 31))
+        self.TempFaultTitle.setObjectName("TempFaultTitle")
+        self.VoltageFaultTitle = QtWidgets.QTextBrowser(self.tab)
+        self.VoltageFaultTitle.setGeometry(QtCore.QRect(170, 270, 91, 31))
+        self.VoltageFaultTitle.setObjectName("VoltageFaultTitle")
+        self.PowerRailFaultOutput = QtWidgets.QTextBrowser(self.tab)
+        self.PowerRailFaultOutput.setGeometry(QtCore.QRect(20, 300, 81, 31))
+        self.PowerRailFaultOutput.setObjectName("PowerRailFaultOutput")
+        self.CurrentFaultOutput = QtWidgets.QTextBrowser(self.tab)
+        self.CurrentFaultOutput.setGeometry(QtCore.QRect(100, 300, 71, 31))
+        self.CurrentFaultOutput.setObjectName("CurrentFaultOutput")
+        self.VoltageFaultOutput = QtWidgets.QTextBrowser(self.tab)
+        self.VoltageFaultOutput.setGeometry(QtCore.QRect(170, 300, 71, 31))
+        self.VoltageFaultOutput.setObjectName("VoltageFaultOutput")
+        self.TempFaultOutput = QtWidgets.QTextBrowser(self.tab)
+        self.TempFaultOutput.setGeometry(QtCore.QRect(240, 300, 71, 31))
+        self.TempFaultOutput.setObjectName("TempFaultOutput")
+        self.PowerRailStatusGOOD = QtWidgets.QCheckBox(self.tab)
+        self.PowerRailStatusGOOD.setGeometry(QtCore.QRect(50, 330, 70, 17))
+        self.PowerRailStatusGOOD.setObjectName("PowerRailStatusGOOD")
+        self.PowerRailStatusBAD = QtWidgets.QCheckBox(self.tab)
+        self.PowerRailStatusBAD.setGeometry(QtCore.QRect(50, 350, 70, 17))
+        self.PowerRailStatusBAD.setObjectName("PowerRailStatusBAD")
+        self.CurrentStatusGOOD = QtWidgets.QCheckBox(self.tab)
+        self.CurrentStatusGOOD.setGeometry(QtCore.QRect(120, 330, 70, 17))
+        self.CurrentStatusGOOD.setObjectName("CurrentStatusGOOD")
+        self.CurrentStatusBAD = QtWidgets.QCheckBox(self.tab)
+        self.CurrentStatusBAD.setGeometry(QtCore.QRect(120, 350, 70, 17))
+        self.CurrentStatusBAD.setObjectName("CurrentStatusBAD")
+        self.TempStatusGOOD_2 = QtWidgets.QCheckBox(self.tab)
+        self.TempStatusGOOD_2.setGeometry(QtCore.QRect(260, 330, 70, 17))
+        self.TempStatusGOOD_2.setObjectName("TempStatusGOOD_2")
+        self.TempStatusBAD_2 = QtWidgets.QCheckBox(self.tab)
+        self.TempStatusBAD_2.setGeometry(QtCore.QRect(260, 350, 70, 17))
+        self.TempStatusBAD_2.setObjectName("TempStatusBAD_2")
+        self.CommStatusGOOD = QtWidgets.QCheckBox(self.tab)
+        self.CommStatusGOOD.setGeometry(QtCore.QRect(330, 330, 70, 17))
+        self.CommStatusGOOD.setObjectName("CommStatusGOOD")
+        self.CommStatusBAD = QtWidgets.QCheckBox(self.tab)
+        self.CommStatusBAD.setGeometry(QtCore.QRect(330, 350, 70, 17))
+        self.CommStatusBAD.setObjectName("CommStatusBAD")
+        self.CurrentCellNumberBox = QtWidgets.QTextEdit(self.tab)
+        self.CurrentCellNumberBox.setEnabled(False)
+        self.CurrentCellNumberBox.setGeometry(QtCore.QRect(10, 10, 411, 31))
+        self.CurrentCellNumberBox.setObjectName("CurrentCellNumberBox")
+        self.CurrentFaultTitle = QtWidgets.QTextBrowser(self.tab)
+        self.CurrentFaultTitle.setGeometry(QtCore.QRect(100, 270, 91, 31))
+        self.CurrentFaultTitle.setObjectName("CurrentFaultTitle")
+        self.CommFaultOutput = QtWidgets.QTextBrowser(self.tab)
+        self.CommFaultOutput.setGeometry(QtCore.QRect(310, 300, 81, 31))
+        self.CommFaultOutput.setObjectName("CommFaultOutput")
+        self.VoltageStatusGOOD = QtWidgets.QCheckBox(self.tab)
+        self.VoltageStatusGOOD.setGeometry(QtCore.QRect(200, 330, 51, 17))
+        self.VoltageStatusGOOD.setObjectName("VoltageStatusGOOD")
+        self.VoltageStatusBAD = QtWidgets.QCheckBox(self.tab)
+        self.VoltageStatusBAD.setGeometry(QtCore.QRect(200, 350, 51, 17))
+        self.VoltageStatusBAD.setObjectName("VoltageStatusBAD")
+        self.ForceAreaMAIN_5.raise_()
+        self.ForceAreaMAIN_4.raise_()
         self.CriticalFaultsBlockBackground.raise_()
+        self.TempBackground.raise_()
+        self.CellTempBlockTitle.raise_()
+        self.BeaconResultBoxMAIN_3.raise_()
+        self.CurrentBackground.raise_()
+        self.label_7.raise_()
+        self.CellCurrentBlockTitle.raise_()
+        self.BeaconResultBoxMAIN_2.raise_()
+        self.label_6.raise_()
+        self.VolatgeBackground.raise_()
+        self.BeaconResultBoxMAIN.raise_()
+        self.label_5.raise_()
+        self.CellVoltageBlockTitle.raise_()
         self.label_8.raise_()
         self.CriticalFaultsResultBox.raise_()
         self.CriticalFaultsBlockTitle.raise_()
-        self.BeaconResultBoxMAIN.raise_()
-        self.BeaconResultBoxMAIN_2.raise_()
-        self.BeaconResultBoxMAIN_3.raise_()
-        self.label_9.raise_()
-        self.BeaconResultBoxMAIN_4.raise_()
-        self.ForceAreaMAIN_4.raise_()
-        self.StateOfChargeResult.raise_()
-        self.StateOfChargeBlockTitle.raise_()
+        self.ChargeControlStatusStateBlockStatusOutput.raise_()
+        self.BalancingStateBlockTitle.raise_()
         self.StateOfHealthBlockTitle.raise_()
-        self.StateOfHealthResult.raise_()
-        self.StateOfPowerBlockTitle.raise_()
-        self.StateOfPowerResult.raise_()
-        self.ForceAreaMAIN_5.raise_()
-        self.ControlsBoxTitle.raise_()
-        self.ContactorStateBlockTitle.raise_()
-        self.ContactorStateBlockStatusOutput.raise_()
+        self.ManualAutomaticStateBlockStatusOutput.raise_()
         self.StateMonitoringBlockTitle.raise_()
+        self.BalancingStateBlockStatusOutput.raise_()
+        self.BMSOperationsStateBlockStatusOutput.raise_()
+        self.StateOfHealthResult.raise_()
+        self.StateOfChargeBlockTitle.raise_()
+        self.StateOfPowerBlockTitle.raise_()
         self.SignalMonitoringBlockTitle.raise_()
-        self.XX_1_StateBlockStatusOutput.raise_()
-        self.XX_1_StateBlockTitle.raise_()
-        self.XX_2_StateBlockTitle.raise_()
-        self.XX_2_StateBlockStatusOutput.raise_()
-        self.XX_3_StateBlockTitle.raise_()
-        self.XX_3_StateBlockStatusOutput.raise_()
-        self.XX_4_StateBlockTitle.raise_()
-        self.XX_4_StateBlockStatusOutput.raise_()
+        self.StateOfChargeResult.raise_()
+        self.BMSOperationsStateBlockTitle.raise_()
+        self.ContactorStateBlockStatusOutput.raise_()
+        self.StateOfPowerResult.raise_()
+        self.ContactorStateBlockTitle.raise_()
+        self.ChargeControlStatusStateBlockTitle.raise_()
+        self.ManualAutomaticStateBlockTitle.raise_()
+        self.ControlsBoxTitle.raise_()
+        self.cellDropDownMenu.raise_()
+        self.PowerRailFaultTitle.raise_()
+        self.PowerRailFaultOutput.raise_()
+        self.CurrentFaultOutput.raise_()
+        self.VoltageFaultOutput.raise_()
+        self.TempFaultOutput.raise_()
+        self.PowerRailStatusGOOD.raise_()
+        self.PowerRailStatusBAD.raise_()
+        self.CurrentStatusGOOD.raise_()
+        self.CurrentStatusBAD.raise_()
+        self.TempStatusGOOD_2.raise_()
+        self.TempStatusBAD_2.raise_()
+        self.CommStatusGOOD.raise_()
+        self.CommStatusBAD.raise_()
+        self.CurrentCellNumberBox.raise_()
+        self.CurrentFaultTitle.raise_()
+        self.VoltageFaultTitle.raise_()
+        self.TempFaultTitle.raise_()
+        self.CommFaultTitle.raise_()
+        self.CommFaultOutput.raise_()
+        self.VoltageStatusGOOD.raise_()
+        self.VoltageStatusBAD.raise_()
+        self.Segment_1_Voltage.addTab(self.tab, "")
+        self.tab_2 = QtWidgets.QWidget()
+        self.tab_2.setObjectName("tab_2")
+        self.moduleDropDownMenu = QtWidgets.QComboBox(self.tab_2)
+        self.moduleDropDownMenu.setGeometry(QtCore.QRect(150, 590, 141, 22))
+        self.moduleDropDownMenu.setAcceptDrops(False)
+        self.moduleDropDownMenu.setEditable(False)
+        self.moduleDropDownMenu.setObjectName("moduleDropDownMenu")
+        self.Cell_1_BalancingVoltage = QtWidgets.QTextBrowser(self.tab_2)
+        self.Cell_1_BalancingVoltage.setGeometry(QtCore.QRect(30, 90, 111, 31))
+        self.Cell_1_BalancingVoltage.setObjectName("Cell_1_BalancingVoltage")
+        self.CurrentModuleNumberBox = QtWidgets.QTextEdit(self.tab_2)
+        self.CurrentModuleNumberBox.setEnabled(False)
+        self.CurrentModuleNumberBox.setGeometry(QtCore.QRect(10, 10, 411, 31))
+        self.CurrentModuleNumberBox.setObjectName("CurrentModuleNumberBox")
+        self.label_9 = QtWidgets.QLabel(self.tab_2)
+        self.label_9.setGeometry(QtCore.QRect(40, 60, 111, 16))
+        self.label_9.setObjectName("label_9")
+        self.label_10 = QtWidgets.QLabel(self.tab_2)
+        self.label_10.setGeometry(QtCore.QRect(170, 60, 111, 16))
+        self.label_10.setObjectName("label_10")
+        self.label_11 = QtWidgets.QLabel(self.tab_2)
+        self.label_11.setGeometry(QtCore.QRect(290, 60, 111, 16))
+        self.label_11.setObjectName("label_11")
+        self.Cell_2_BalancingVoltage = QtWidgets.QTextBrowser(self.tab_2)
+        self.Cell_2_BalancingVoltage.setGeometry(QtCore.QRect(30, 130, 111, 31))
+        self.Cell_2_BalancingVoltage.setObjectName("Cell_2_BalancingVoltage")
+        self.Cell_3_BalancingVoltage = QtWidgets.QTextBrowser(self.tab_2)
+        self.Cell_3_BalancingVoltage.setGeometry(QtCore.QRect(30, 170, 111, 31))
+        self.Cell_3_BalancingVoltage.setObjectName("Cell_3_BalancingVoltage")
+        self.Cell_4_BalancingVoltage = QtWidgets.QTextBrowser(self.tab_2)
+        self.Cell_4_BalancingVoltage.setGeometry(QtCore.QRect(30, 210, 111, 31))
+        self.Cell_4_BalancingVoltage.setObjectName("Cell_4_BalancingVoltage")
+        self.Cell_7_BalancingVoltage = QtWidgets.QTextBrowser(self.tab_2)
+        self.Cell_7_BalancingVoltage.setGeometry(QtCore.QRect(30, 330, 111, 31))
+        self.Cell_7_BalancingVoltage.setObjectName("Cell_7_BalancingVoltage")
+        self.Cell_8_BalancingVoltage = QtWidgets.QTextBrowser(self.tab_2)
+        self.Cell_8_BalancingVoltage.setGeometry(QtCore.QRect(30, 370, 111, 31))
+        self.Cell_8_BalancingVoltage.setObjectName("Cell_8_BalancingVoltage")
+        self.Cell_5_BalancingVoltage = QtWidgets.QTextBrowser(self.tab_2)
+        self.Cell_5_BalancingVoltage.setGeometry(QtCore.QRect(30, 250, 111, 31))
+        self.Cell_5_BalancingVoltage.setObjectName("Cell_5_BalancingVoltage")
+        self.Cell_6_BalancingVoltage = QtWidgets.QTextBrowser(self.tab_2)
+        self.Cell_6_BalancingVoltage.setGeometry(QtCore.QRect(30, 290, 111, 31))
+        self.Cell_6_BalancingVoltage.setObjectName("Cell_6_BalancingVoltage")
+        self.Cell_11_BalancingVoltage = QtWidgets.QTextBrowser(self.tab_2)
+        self.Cell_11_BalancingVoltage.setGeometry(QtCore.QRect(30, 490, 111, 31))
+        self.Cell_11_BalancingVoltage.setObjectName("Cell_11_BalancingVoltage")
+        self.Cell_12_BalancingVoltage = QtWidgets.QTextBrowser(self.tab_2)
+        self.Cell_12_BalancingVoltage.setGeometry(QtCore.QRect(30, 530, 111, 31))
+        self.Cell_12_BalancingVoltage.setObjectName("Cell_12_BalancingVoltage")
+        self.Cell_9_BalancingVoltage = QtWidgets.QTextBrowser(self.tab_2)
+        self.Cell_9_BalancingVoltage.setGeometry(QtCore.QRect(30, 410, 111, 31))
+        self.Cell_9_BalancingVoltage.setObjectName("Cell_9_BalancingVoltage")
+        self.Cell_10_BalancingVoltage = QtWidgets.QTextBrowser(self.tab_2)
+        self.Cell_10_BalancingVoltage.setGeometry(QtCore.QRect(30, 450, 111, 31))
+        self.Cell_10_BalancingVoltage.setObjectName("Cell_10_BalancingVoltage")
+        self.Cell_5_BalancingCurrent = QtWidgets.QTextBrowser(self.tab_2)
+        self.Cell_5_BalancingCurrent.setGeometry(QtCore.QRect(160, 250, 111, 31))
+        self.Cell_5_BalancingCurrent.setObjectName("Cell_5_BalancingCurrent")
+        self.Cell_3_BalancingCurrent = QtWidgets.QTextBrowser(self.tab_2)
+        self.Cell_3_BalancingCurrent.setGeometry(QtCore.QRect(160, 170, 111, 31))
+        self.Cell_3_BalancingCurrent.setObjectName("Cell_3_BalancingCurrent")
+        self.Cell_10_BalancingCurrent = QtWidgets.QTextBrowser(self.tab_2)
+        self.Cell_10_BalancingCurrent.setGeometry(QtCore.QRect(160, 450, 111, 31))
+        self.Cell_10_BalancingCurrent.setObjectName("Cell_10_BalancingCurrent")
+        self.Cell_4_BalancingCurrent = QtWidgets.QTextBrowser(self.tab_2)
+        self.Cell_4_BalancingCurrent.setGeometry(QtCore.QRect(160, 210, 111, 31))
+        self.Cell_4_BalancingCurrent.setObjectName("Cell_4_BalancingCurrent")
+        self.Cell_8_BalancingCurrent = QtWidgets.QTextBrowser(self.tab_2)
+        self.Cell_8_BalancingCurrent.setGeometry(QtCore.QRect(160, 370, 111, 31))
+        self.Cell_8_BalancingCurrent.setObjectName("Cell_8_BalancingCurrent")
+        self.Cell_12_BalancingCurrent = QtWidgets.QTextBrowser(self.tab_2)
+        self.Cell_12_BalancingCurrent.setGeometry(QtCore.QRect(160, 530, 111, 31))
+        self.Cell_12_BalancingCurrent.setObjectName("Cell_12_BalancingCurrent")
+        self.Cell_7_BalancingCurrent = QtWidgets.QTextBrowser(self.tab_2)
+        self.Cell_7_BalancingCurrent.setGeometry(QtCore.QRect(160, 330, 111, 31))
+        self.Cell_7_BalancingCurrent.setObjectName("Cell_7_BalancingCurrent")
+        self.Cell_1_BalancingCurrent = QtWidgets.QTextBrowser(self.tab_2)
+        self.Cell_1_BalancingCurrent.setGeometry(QtCore.QRect(160, 90, 111, 31))
+        self.Cell_1_BalancingCurrent.setObjectName("Cell_1_BalancingCurrent")
+        self.Cell_11_BalancingCurrent = QtWidgets.QTextBrowser(self.tab_2)
+        self.Cell_11_BalancingCurrent.setGeometry(QtCore.QRect(160, 490, 111, 31))
+        self.Cell_11_BalancingCurrent.setObjectName("Cell_11_BalancingCurrent")
+        self.Cell_6_BalancingCurrent = QtWidgets.QTextBrowser(self.tab_2)
+        self.Cell_6_BalancingCurrent.setGeometry(QtCore.QRect(160, 290, 111, 31))
+        self.Cell_6_BalancingCurrent.setObjectName("Cell_6_BalancingCurrent")
+        self.Cell_2_BalancingCurrent = QtWidgets.QTextBrowser(self.tab_2)
+        self.Cell_2_BalancingCurrent.setGeometry(QtCore.QRect(160, 130, 111, 31))
+        self.Cell_2_BalancingCurrent.setObjectName("Cell_2_BalancingCurrent")
+        self.Cell_9_BalancingCurrent = QtWidgets.QTextBrowser(self.tab_2)
+        self.Cell_9_BalancingCurrent.setGeometry(QtCore.QRect(160, 410, 111, 31))
+        self.Cell_9_BalancingCurrent.setObjectName("Cell_9_BalancingCurrent")
+        self.Cell_5_BalancingTemp = QtWidgets.QTextBrowser(self.tab_2)
+        self.Cell_5_BalancingTemp.setGeometry(QtCore.QRect(290, 250, 111, 31))
+        self.Cell_5_BalancingTemp.setObjectName("Cell_5_BalancingTemp")
+        self.Cell_3_BalancingTemp = QtWidgets.QTextBrowser(self.tab_2)
+        self.Cell_3_BalancingTemp.setGeometry(QtCore.QRect(290, 170, 111, 31))
+        self.Cell_3_BalancingTemp.setObjectName("Cell_3_BalancingTemp")
+        self.Cell_10_BalancingTemp = QtWidgets.QTextBrowser(self.tab_2)
+        self.Cell_10_BalancingTemp.setGeometry(QtCore.QRect(290, 450, 111, 31))
+        self.Cell_10_BalancingTemp.setObjectName("Cell_10_BalancingTemp")
+        self.Cell_4_BalancingTemp = QtWidgets.QTextBrowser(self.tab_2)
+        self.Cell_4_BalancingTemp.setGeometry(QtCore.QRect(290, 210, 111, 31))
+        self.Cell_4_BalancingTemp.setObjectName("Cell_4_BalancingTemp")
+        self.Cell_8_BalancingTemp = QtWidgets.QTextBrowser(self.tab_2)
+        self.Cell_8_BalancingTemp.setGeometry(QtCore.QRect(290, 370, 111, 31))
+        self.Cell_8_BalancingTemp.setObjectName("Cell_8_BalancingTemp")
+        self.Cell_12_BalancingTemp = QtWidgets.QTextBrowser(self.tab_2)
+        self.Cell_12_BalancingTemp.setGeometry(QtCore.QRect(290, 530, 111, 31))
+        self.Cell_12_BalancingTemp.setObjectName("Cell_12_BalancingTemp")
+        self.Cell_7_BalancingTemp = QtWidgets.QTextBrowser(self.tab_2)
+        self.Cell_7_BalancingTemp.setGeometry(QtCore.QRect(290, 330, 111, 31))
+        self.Cell_7_BalancingTemp.setObjectName("Cell_7_BalancingTemp")
+        self.Cell_1_BalancingTemp = QtWidgets.QTextBrowser(self.tab_2)
+        self.Cell_1_BalancingTemp.setGeometry(QtCore.QRect(290, 90, 111, 31))
+        self.Cell_1_BalancingTemp.setObjectName("Cell_1_BalancingTemp")
+        self.Cell_11_BalancingTemp = QtWidgets.QTextBrowser(self.tab_2)
+        self.Cell_11_BalancingTemp.setGeometry(QtCore.QRect(290, 490, 111, 31))
+        self.Cell_11_BalancingTemp.setObjectName("Cell_11_BalancingTemp")
+        self.Cell_6_BalancingTemp = QtWidgets.QTextBrowser(self.tab_2)
+        self.Cell_6_BalancingTemp.setGeometry(QtCore.QRect(290, 290, 111, 31))
+        self.Cell_6_BalancingTemp.setObjectName("Cell_6_BalancingTemp")
+        self.Cell_2_BalancingTemp = QtWidgets.QTextBrowser(self.tab_2)
+        self.Cell_2_BalancingTemp.setGeometry(QtCore.QRect(290, 130, 111, 31))
+        self.Cell_2_BalancingTemp.setObjectName("Cell_2_BalancingTemp")
+        self.Cell_9_BalancingTemp = QtWidgets.QTextBrowser(self.tab_2)
+        self.Cell_9_BalancingTemp.setGeometry(QtCore.QRect(290, 410, 111, 31))
+        self.Cell_9_BalancingTemp.setObjectName("Cell_9_BalancingTemp")
+        self.label_14 = QtWidgets.QLabel(self.tab_2)
+        self.label_14.setGeometry(QtCore.QRect(10, 100, 16, 16))
+        self.label_14.setObjectName("label_14")
+        self.label_15 = QtWidgets.QLabel(self.tab_2)
+        self.label_15.setGeometry(QtCore.QRect(10, 140, 16, 16))
+        self.label_15.setObjectName("label_15")
+        self.label_16 = QtWidgets.QLabel(self.tab_2)
+        self.label_16.setGeometry(QtCore.QRect(10, 170, 16, 16))
+        self.label_16.setObjectName("label_16")
+        self.label_17 = QtWidgets.QLabel(self.tab_2)
+        self.label_17.setGeometry(QtCore.QRect(10, 210, 16, 16))
+        self.label_17.setObjectName("label_17")
+        self.label_18 = QtWidgets.QLabel(self.tab_2)
+        self.label_18.setGeometry(QtCore.QRect(10, 250, 16, 16))
+        self.label_18.setObjectName("label_18")
+        self.label_19 = QtWidgets.QLabel(self.tab_2)
+        self.label_19.setGeometry(QtCore.QRect(10, 290, 16, 16))
+        self.label_19.setObjectName("label_19")
+        self.label_20 = QtWidgets.QLabel(self.tab_2)
+        self.label_20.setGeometry(QtCore.QRect(10, 330, 16, 16))
+        self.label_20.setObjectName("label_20")
+        self.label_21 = QtWidgets.QLabel(self.tab_2)
+        self.label_21.setGeometry(QtCore.QRect(10, 370, 16, 16))
+        self.label_21.setObjectName("label_21")
+        self.label_22 = QtWidgets.QLabel(self.tab_2)
+        self.label_22.setGeometry(QtCore.QRect(10, 410, 16, 16))
+        self.label_22.setObjectName("label_22")
+        self.label_23 = QtWidgets.QLabel(self.tab_2)
+        self.label_23.setGeometry(QtCore.QRect(10, 450, 16, 16))
+        self.label_23.setObjectName("label_23")
+        self.label_24 = QtWidgets.QLabel(self.tab_2)
+        self.label_24.setGeometry(QtCore.QRect(10, 490, 16, 16))
+        self.label_24.setObjectName("label_24")
+        self.label_25 = QtWidgets.QLabel(self.tab_2)
+        self.label_25.setGeometry(QtCore.QRect(10, 530, 16, 16))
+        self.label_25.setObjectName("label_25")
+        self.Segment_1_Voltage.addTab(self.tab_2, "")
+        self.tab_3 = QtWidgets.QWidget()
+        self.tab_3.setObjectName("tab_3")
+        self.slaveDropDownMenu = QtWidgets.QComboBox(self.tab_3)
+        self.slaveDropDownMenu.setGeometry(QtCore.QRect(160, 600, 131, 22))
+        self.slaveDropDownMenu.setAcceptDrops(False)
+        self.slaveDropDownMenu.setEditable(False)
+        self.slaveDropDownMenu.setObjectName("slaveDropDownMenu")
+        self.CurrentSlaveNumberBox = QtWidgets.QTextEdit(self.tab_3)
+        self.CurrentSlaveNumberBox.setEnabled(False)
+        self.CurrentSlaveNumberBox.setGeometry(QtCore.QRect(10, 10, 411, 31))
+        self.CurrentSlaveNumberBox.setObjectName("CurrentSlaveNumberBox")
+        self.Segment_1_Voltage_2 = QtWidgets.QTextBrowser(self.tab_3)
+        self.Segment_1_Voltage_2.setGeometry(QtCore.QRect(10, 110, 91, 41))
+        self.Segment_1_Voltage_2.setObjectName("Segment_1_Voltage_2")
+        self.Segment_2_Voltage = QtWidgets.QTextBrowser(self.tab_3)
+        self.Segment_2_Voltage.setGeometry(QtCore.QRect(110, 110, 101, 41))
+        self.Segment_2_Voltage.setObjectName("Segment_2_Voltage")
+        self.Segment_1_Temp = QtWidgets.QTextBrowser(self.tab_3)
+        self.Segment_1_Temp.setGeometry(QtCore.QRect(220, 110, 101, 41))
+        self.Segment_1_Temp.setObjectName("Segment_1_Temp")
+        self.Segment_2_Temp = QtWidgets.QTextBrowser(self.tab_3)
+        self.Segment_2_Temp.setGeometry(QtCore.QRect(330, 110, 91, 41))
+        self.Segment_2_Temp.setObjectName("Segment_2_Temp")
+        self.label_12 = QtWidgets.QLabel(self.tab_3)
+        self.label_12.setGeometry(QtCore.QRect(60, 60, 131, 16))
+        self.label_12.setObjectName("label_12")
+        self.label_13 = QtWidgets.QLabel(self.tab_3)
+        self.label_13.setGeometry(QtCore.QRect(240, 60, 161, 20))
+        self.label_13.setObjectName("label_13")
+        self.Segment_3_Voltage = QtWidgets.QTextBrowser(self.tab_3)
+        self.Segment_3_Voltage.setGeometry(QtCore.QRect(10, 170, 91, 41))
+        self.Segment_3_Voltage.setObjectName("Segment_3_Voltage")
+        self.Segment_4_Temp = QtWidgets.QTextBrowser(self.tab_3)
+        self.Segment_4_Temp.setGeometry(QtCore.QRect(330, 170, 91, 41))
+        self.Segment_4_Temp.setObjectName("Segment_4_Temp")
+        self.Segment_4_Voltage = QtWidgets.QTextBrowser(self.tab_3)
+        self.Segment_4_Voltage.setGeometry(QtCore.QRect(110, 170, 101, 41))
+        self.Segment_4_Voltage.setObjectName("Segment_4_Voltage")
+        self.Segment_3_Temp = QtWidgets.QTextBrowser(self.tab_3)
+        self.Segment_3_Temp.setGeometry(QtCore.QRect(220, 170, 101, 41))
+        self.Segment_3_Temp.setObjectName("Segment_3_Temp")
+        self.Segment_5_Voltage = QtWidgets.QTextBrowser(self.tab_3)
+        self.Segment_5_Voltage.setGeometry(QtCore.QRect(10, 230, 91, 41))
+        self.Segment_5_Voltage.setObjectName("Segment_5_Voltage")
+        self.Segment_6_Temp = QtWidgets.QTextBrowser(self.tab_3)
+        self.Segment_6_Temp.setGeometry(QtCore.QRect(330, 230, 91, 41))
+        self.Segment_6_Temp.setObjectName("Segment_6_Temp")
+        self.Segment_6_Voltage = QtWidgets.QTextBrowser(self.tab_3)
+        self.Segment_6_Voltage.setGeometry(QtCore.QRect(110, 230, 101, 41))
+        self.Segment_6_Voltage.setObjectName("Segment_6_Voltage")
+        self.Segment_5_Temp = QtWidgets.QTextBrowser(self.tab_3)
+        self.Segment_5_Temp.setGeometry(QtCore.QRect(220, 230, 101, 41))
+        self.Segment_5_Temp.setObjectName("Segment_5_Temp")
+        self.Segment_7_Voltage = QtWidgets.QTextBrowser(self.tab_3)
+        self.Segment_7_Voltage.setGeometry(QtCore.QRect(10, 290, 91, 41))
+        self.Segment_7_Voltage.setObjectName("Segment_7_Voltage")
+        self.Segment_8_Temp = QtWidgets.QTextBrowser(self.tab_3)
+        self.Segment_8_Temp.setGeometry(QtCore.QRect(330, 290, 91, 41))
+        self.Segment_8_Temp.setObjectName("Segment_8_Temp")
+        self.Segment_8_Voltage = QtWidgets.QTextBrowser(self.tab_3)
+        self.Segment_8_Voltage.setGeometry(QtCore.QRect(110, 290, 101, 41))
+        self.Segment_8_Voltage.setObjectName("Segment_8_Voltage")
+        self.Segment_7_Temp = QtWidgets.QTextBrowser(self.tab_3)
+        self.Segment_7_Temp.setGeometry(QtCore.QRect(220, 290, 101, 41))
+        self.Segment_7_Temp.setObjectName("Segment_7_Temp")
+        self.Segment_9_Voltage = QtWidgets.QTextBrowser(self.tab_3)
+        self.Segment_9_Voltage.setGeometry(QtCore.QRect(10, 350, 91, 41))
+        self.Segment_9_Voltage.setObjectName("Segment_9_Voltage")
+        self.Segment_11_Voltage = QtWidgets.QTextBrowser(self.tab_3)
+        self.Segment_11_Voltage.setGeometry(QtCore.QRect(10, 410, 91, 41))
+        self.Segment_11_Voltage.setObjectName("Segment_11_Voltage")
+        self.Segment_11_Temp = QtWidgets.QTextBrowser(self.tab_3)
+        self.Segment_11_Temp.setGeometry(QtCore.QRect(220, 410, 101, 41))
+        self.Segment_11_Temp.setObjectName("Segment_11_Temp")
+        self.Segment_16_Voltage = QtWidgets.QTextBrowser(self.tab_3)
+        self.Segment_16_Voltage.setGeometry(QtCore.QRect(110, 530, 101, 41))
+        self.Segment_16_Voltage.setObjectName("Segment_16_Voltage")
+        self.Segment_13_Voltage = QtWidgets.QTextBrowser(self.tab_3)
+        self.Segment_13_Voltage.setGeometry(QtCore.QRect(10, 470, 91, 41))
+        self.Segment_13_Voltage.setObjectName("Segment_13_Voltage")
+        self.Segment_15_Temp = QtWidgets.QTextBrowser(self.tab_3)
+        self.Segment_15_Temp.setGeometry(QtCore.QRect(220, 530, 101, 41))
+        self.Segment_15_Temp.setObjectName("Segment_15_Temp")
+        self.Segment_13_Temp = QtWidgets.QTextBrowser(self.tab_3)
+        self.Segment_13_Temp.setGeometry(QtCore.QRect(220, 470, 101, 41))
+        self.Segment_13_Temp.setObjectName("Segment_13_Temp")
+        self.Segment_10_Temp = QtWidgets.QTextBrowser(self.tab_3)
+        self.Segment_10_Temp.setGeometry(QtCore.QRect(330, 350, 91, 41))
+        self.Segment_10_Temp.setObjectName("Segment_10_Temp")
+        self.Segment_10_Voltage = QtWidgets.QTextBrowser(self.tab_3)
+        self.Segment_10_Voltage.setGeometry(QtCore.QRect(110, 350, 101, 41))
+        self.Segment_10_Voltage.setObjectName("Segment_10_Voltage")
+        self.Segment_9_Temp = QtWidgets.QTextBrowser(self.tab_3)
+        self.Segment_9_Temp.setGeometry(QtCore.QRect(220, 350, 101, 41))
+        self.Segment_9_Temp.setObjectName("Segment_9_Temp")
+        self.Segment_14_Voltage = QtWidgets.QTextBrowser(self.tab_3)
+        self.Segment_14_Voltage.setGeometry(QtCore.QRect(110, 470, 101, 41))
+        self.Segment_14_Voltage.setObjectName("Segment_14_Voltage")
+        self.Segment_16_Temp = QtWidgets.QTextBrowser(self.tab_3)
+        self.Segment_16_Temp.setGeometry(QtCore.QRect(330, 530, 91, 41))
+        self.Segment_16_Temp.setObjectName("Segment_16_Temp")
+        self.Segment_12_Temp = QtWidgets.QTextBrowser(self.tab_3)
+        self.Segment_12_Temp.setGeometry(QtCore.QRect(330, 410, 91, 41))
+        self.Segment_12_Temp.setObjectName("Segment_12_Temp")
+        self.Segment_12_Voltage = QtWidgets.QTextBrowser(self.tab_3)
+        self.Segment_12_Voltage.setGeometry(QtCore.QRect(110, 410, 101, 41))
+        self.Segment_12_Voltage.setObjectName("Segment_12_Voltage")
+        self.Segment_15_Voltage = QtWidgets.QTextBrowser(self.tab_3)
+        self.Segment_15_Voltage.setGeometry(QtCore.QRect(10, 530, 91, 41))
+        self.Segment_15_Voltage.setObjectName("Segment_15_Voltage")
+        self.Segment_14_Temp = QtWidgets.QTextBrowser(self.tab_3)
+        self.Segment_14_Temp.setGeometry(QtCore.QRect(330, 470, 91, 41))
+        self.Segment_14_Temp.setObjectName("Segment_14_Temp")
+        self.label_26 = QtWidgets.QLabel(self.tab_3)
+        self.label_26.setGeometry(QtCore.QRect(50, 90, 16, 16))
+        self.label_26.setObjectName("label_26")
+        self.label_27 = QtWidgets.QLabel(self.tab_3)
+        self.label_27.setGeometry(QtCore.QRect(150, 90, 16, 16))
+        self.label_27.setObjectName("label_27")
+        self.label_28 = QtWidgets.QLabel(self.tab_3)
+        self.label_28.setGeometry(QtCore.QRect(50, 150, 16, 16))
+        self.label_28.setObjectName("label_28")
+        self.label_29 = QtWidgets.QLabel(self.tab_3)
+        self.label_29.setGeometry(QtCore.QRect(150, 150, 16, 16))
+        self.label_29.setObjectName("label_29")
+        self.label_30 = QtWidgets.QLabel(self.tab_3)
+        self.label_30.setGeometry(QtCore.QRect(350, 90, 16, 16))
+        self.label_30.setObjectName("label_30")
+        self.label_31 = QtWidgets.QLabel(self.tab_3)
+        self.label_31.setGeometry(QtCore.QRect(250, 90, 16, 16))
+        self.label_31.setObjectName("label_31")
+        self.label_32 = QtWidgets.QLabel(self.tab_3)
+        self.label_32.setGeometry(QtCore.QRect(350, 150, 16, 16))
+        self.label_32.setObjectName("label_32")
+        self.label_33 = QtWidgets.QLabel(self.tab_3)
+        self.label_33.setGeometry(QtCore.QRect(250, 150, 16, 16))
+        self.label_33.setObjectName("label_33")
+        self.label_34 = QtWidgets.QLabel(self.tab_3)
+        self.label_34.setGeometry(QtCore.QRect(250, 210, 16, 16))
+        self.label_34.setObjectName("label_34")
+        self.label_35 = QtWidgets.QLabel(self.tab_3)
+        self.label_35.setGeometry(QtCore.QRect(150, 210, 16, 16))
+        self.label_35.setObjectName("label_35")
+        self.label_36 = QtWidgets.QLabel(self.tab_3)
+        self.label_36.setGeometry(QtCore.QRect(50, 210, 16, 16))
+        self.label_36.setObjectName("label_36")
+        self.label_37 = QtWidgets.QLabel(self.tab_3)
+        self.label_37.setGeometry(QtCore.QRect(250, 270, 16, 16))
+        self.label_37.setObjectName("label_37")
+        self.label_38 = QtWidgets.QLabel(self.tab_3)
+        self.label_38.setGeometry(QtCore.QRect(350, 210, 16, 16))
+        self.label_38.setObjectName("label_38")
+        self.label_39 = QtWidgets.QLabel(self.tab_3)
+        self.label_39.setGeometry(QtCore.QRect(150, 270, 16, 16))
+        self.label_39.setObjectName("label_39")
+        self.label_40 = QtWidgets.QLabel(self.tab_3)
+        self.label_40.setGeometry(QtCore.QRect(350, 270, 16, 16))
+        self.label_40.setObjectName("label_40")
+        self.label_41 = QtWidgets.QLabel(self.tab_3)
+        self.label_41.setGeometry(QtCore.QRect(50, 270, 16, 16))
+        self.label_41.setObjectName("label_41")
+        self.label_42 = QtWidgets.QLabel(self.tab_3)
+        self.label_42.setGeometry(QtCore.QRect(250, 330, 16, 16))
+        self.label_42.setObjectName("label_42")
+        self.label_43 = QtWidgets.QLabel(self.tab_3)
+        self.label_43.setGeometry(QtCore.QRect(150, 330, 16, 16))
+        self.label_43.setObjectName("label_43")
+        self.label_44 = QtWidgets.QLabel(self.tab_3)
+        self.label_44.setGeometry(QtCore.QRect(50, 330, 16, 16))
+        self.label_44.setObjectName("label_44")
+        self.label_45 = QtWidgets.QLabel(self.tab_3)
+        self.label_45.setGeometry(QtCore.QRect(250, 390, 16, 16))
+        self.label_45.setObjectName("label_45")
+        self.label_46 = QtWidgets.QLabel(self.tab_3)
+        self.label_46.setGeometry(QtCore.QRect(350, 330, 16, 16))
+        self.label_46.setObjectName("label_46")
+        self.label_47 = QtWidgets.QLabel(self.tab_3)
+        self.label_47.setGeometry(QtCore.QRect(150, 390, 16, 16))
+        self.label_47.setObjectName("label_47")
+        self.label_48 = QtWidgets.QLabel(self.tab_3)
+        self.label_48.setGeometry(QtCore.QRect(350, 390, 16, 16))
+        self.label_48.setObjectName("label_48")
+        self.label_49 = QtWidgets.QLabel(self.tab_3)
+        self.label_49.setGeometry(QtCore.QRect(50, 390, 16, 16))
+        self.label_49.setObjectName("label_49")
+        self.label_50 = QtWidgets.QLabel(self.tab_3)
+        self.label_50.setGeometry(QtCore.QRect(250, 450, 16, 16))
+        self.label_50.setObjectName("label_50")
+        self.label_51 = QtWidgets.QLabel(self.tab_3)
+        self.label_51.setGeometry(QtCore.QRect(150, 450, 16, 16))
+        self.label_51.setObjectName("label_51")
+        self.label_52 = QtWidgets.QLabel(self.tab_3)
+        self.label_52.setGeometry(QtCore.QRect(50, 450, 16, 16))
+        self.label_52.setObjectName("label_52")
+        self.label_53 = QtWidgets.QLabel(self.tab_3)
+        self.label_53.setGeometry(QtCore.QRect(250, 510, 16, 16))
+        self.label_53.setObjectName("label_53")
+        self.label_54 = QtWidgets.QLabel(self.tab_3)
+        self.label_54.setGeometry(QtCore.QRect(350, 450, 16, 16))
+        self.label_54.setObjectName("label_54")
+        self.label_55 = QtWidgets.QLabel(self.tab_3)
+        self.label_55.setGeometry(QtCore.QRect(150, 510, 16, 16))
+        self.label_55.setObjectName("label_55")
+        self.label_56 = QtWidgets.QLabel(self.tab_3)
+        self.label_56.setGeometry(QtCore.QRect(350, 510, 16, 16))
+        self.label_56.setObjectName("label_56")
+        self.label_57 = QtWidgets.QLabel(self.tab_3)
+        self.label_57.setGeometry(QtCore.QRect(50, 510, 16, 16))
+        self.label_57.setObjectName("label_57")
+        self.Segment_1_Voltage.addTab(self.tab_3, "")
+        self.Segment_1_Voltage.raise_()
+        self.BMS_Diagnostics_Dashboard_Title.raise_()
 
         self.retranslateUi(BMS_Dashboard)
+        self.Segment_1_Voltage.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(BMS_Dashboard)
 
         # call the handler function so we can use the update method to update the GUI
@@ -195,7 +700,39 @@ class Ui_BMS_Dashboard(QMainWindow):
         self.timer = QtCore.QTimer()
         self.timer.timeout.connect(self.update)
         self.timer.start(100)  # Adjust the interval as needed
-        self.serial_port = serial.Serial('COM3', 9600)  # Open serial port
+        # self.serial_port = serial.Serial('COM3', 9600)  # Open serial port
+
+        # add elements to the dropdown menus
+        self.cellDropDownMenu.addItems(["Select Cell To View", "cell 1", "cell 2", "cell 3", "cell 4", "cell 5", "cell 6", "cell 7", "cell 8", "cell 9", "cell 10", "cell 11", "cell 12"])
+        self.moduleDropDownMenu.addItems(["Select Module To View", "module 1", "module 2", "module 3", "module 4"]) # adding multiple modules for scalability. don't know how many we eventually want
+        self.slaveDropDownMenu.addItems(["Select Slave To View", "slave 1", "slave 2", "slave 3"])
+
+        # Connect the currentIndexChanged signal of the combo box to your slot
+        self.cellDropDownMenu.currentIndexChanged.connect(self.on_cell_dropdown_changed)
+        self.moduleDropDownMenu.currentIndexChanged.connect(self.on_module_dropdown_changed)
+        self.slaveDropDownMenu.currentIndexChanged.connect(self.on_slave_dropdown_changed)
+
+    # update the GUI according to what is selected from the dropdowns
+    def on_cell_dropdown_changed(self):
+        # Get the currently selected item from the combo box
+        selected_item = self.cellDropDownMenu.currentText()
+        # Update your page according to the selected item
+        current_text = self.CurrentCellNumberBox.toPlainText()
+        self.CurrentCellNumberBox.setPlainText(current_text + selected_item)
+    def on_module_dropdown_changed(self):
+        # Get the currently selected item from the combo box
+        selected_item = self.moduleDropDownMenu.currentText()
+        # Update your page according to the selected item
+        current_text = self.CurrentModuleNumberBox.toPlainText()
+        self.CurrentModuleNumberBox.setPlainText(current_text + selected_item)
+    def on_slave_dropdown_changed(self):
+        # Get the currently selected item from the combo box
+        selected_item = self.slaveDropDownMenu.currentText()
+        # Update your page according to the selected item
+        current_text = self.CurrentSlaveNumberBox.toPlainText()
+        self.CurrentSlaveNumberBox.setPlainText(current_text + selected_item)
+
+    # TODO: add under/over current to the faults section
 
     # update the GUI with latest diagnostics (values read from STM32)
     def update(self):
@@ -224,67 +761,86 @@ class Ui_BMS_Dashboard(QMainWindow):
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
 "<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Segoe UI Emoji,sans-serif\'; font-size:11pt;\">🔋 </span><span style=\" font-size:11pt; font-weight:600;\">BMS Diagnostics Dashboard </span><span style=\" font-family:\'Segoe UI Emoji,sans-serif\'; font-size:11pt;\">🔋</span></p></body></html>"))
+        self.BeaconResultBoxMAIN.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.label_5.setText(_translate("BMS_Dashboard", "Measured Cell Voltage"))
         self.CellVoltageBlockTitle.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
 "<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Segoe UI Emoji,sans-serif\'; font-size:9pt;\">⚡️ </span><span style=\" font-size:9pt; color:#00007f;\">Volatge (V) </span><span style=\" font-family:\'Segoe UI Emoji,sans-serif\'; font-size:9pt;\">⚡️</span></p></body></html>"))
-        self.label_5.setText(_translate("BMS_Dashboard", "Measured Cell Voltage"))
+        self.CellTempBlockTitle.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Segoe UI Emoji,sans-serif\'; font-size:9pt;\">🌡️ </span><span style=\" font-size:9pt; color:#00007f;\">Temperature (F) </span><span style=\" font-family:\'Segoe UI Emoji,sans-serif\'; font-size:9pt;\">🌡️</span></p></body></html>"))
         self.label_6.setText(_translate("BMS_Dashboard", "Measured Cell Current"))
+        self.BeaconResultBoxMAIN_2.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
         self.CellCurrentBlockTitle.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
 "<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Segoe UI Emoji,sans-serif\'; font-size:9pt;\">🔌 </span><span style=\" font-size:9pt; color:#00007f;\">Current (A) </span><span style=\" font-family:\'Segoe UI Emoji,sans-serif\'; font-size:9pt;\">🔌</span></p></body></html>"))
         self.label_7.setText(_translate("BMS_Dashboard", "Measured Cell Temp"))
-        self.CellTempBlockTitle.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+        self.BeaconResultBoxMAIN_3.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
-"<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Segoe UI Emoji,sans-serif\'; font-size:9pt;\">🌡️ </span><span style=\" font-size:9pt; color:#00007f;\">Temperature (F) </span><span style=\" font-family:\'Segoe UI Emoji,sans-serif\'; font-size:9pt;\">🌡️</span></p></body></html>"))
-        self.CriticalFaultsBlockTitle.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-"p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
-"<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Segoe UI Emoji,sans-serif\'; font-size:9pt; font-weight:600;\">🚨 </span><span style=\" font-size:11pt; font-weight:600; color:#ff0000;\">Critical Faults/Flags</span><span style=\" font-family:\'Segoe UI Emoji,sans-serif\'; font-size:9pt; font-weight:600;\">🚨</span></p></body></html>"))
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
         self.label_8.setText(_translate("BMS_Dashboard", "Fault Message:"))
         self.CriticalFaultsResultBox.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
-        self.BeaconResultBoxMAIN.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+        self.CriticalFaultsBlockTitle.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Segoe UI Emoji,sans-serif\'; font-size:9pt; font-weight:600;\">🚨 </span><span style=\" font-size:11pt; font-weight:600; color:#ff0000;\">Critical Faults/Flags</span><span style=\" font-family:\'Segoe UI Emoji,sans-serif\'; font-size:9pt; font-weight:600;\">🚨</span></p></body></html>"))
+        self.ChargeControlStatusStateBlockStatusOutput.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
-        self.BeaconResultBoxMAIN_2.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+        self.BalancingStateBlockTitle.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Segoe UI Emoji,sans-serif\'; font-size:8pt;\">Balancing State</span></p></body></html>"))
+        self.StateOfHealthBlockTitle.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Segoe UI Emoji,sans-serif\'; font-size:9pt;\">State of Health</span></p></body></html>"))
+        self.ManualAutomaticStateBlockStatusOutput.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
-        self.BeaconResultBoxMAIN_3.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-"p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
-        self.label_9.setText(_translate("BMS_Dashboard", "Measured Cell Voltage"))
-        self.BeaconResultBoxMAIN_4.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-"p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
-        self.SignalMonitoringBlockTitle.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-"p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
-"<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Segoe UI Emoji,sans-serif\'; font-size:10pt;\">Signal Monitoring</span></p></body></html>"))
         self.StateMonitoringBlockTitle.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
 "<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Segoe UI Emoji,sans-serif\'; font-size:10pt;\">State Monitoring</span></p></body></html>"))
-        self.StateOfChargeResult.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+        self.BalancingStateBlockStatusOutput.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.BMSOperationsStateBlockStatusOutput.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.StateOfHealthResult.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
@@ -294,81 +850,527 @@ class Ui_BMS_Dashboard(QMainWindow):
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
 "<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Segoe UI Emoji,sans-serif\'; font-size:9pt;\">State of Charge</span></p></body></html>"))
-        self.StateOfHealthBlockTitle.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-"p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
-"<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Segoe UI Emoji,sans-serif\'; font-size:9pt;\">State of Health</span></p></body></html>"))
-        self.StateOfHealthResult.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-"p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
         self.StateOfPowerBlockTitle.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
 "<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Segoe UI Emoji,sans-serif\'; font-size:9pt;\">State of Power</span></p></body></html>"))
-        self.StateOfPowerResult.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+        self.SignalMonitoringBlockTitle.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Segoe UI Emoji,sans-serif\'; font-size:10pt;\">Signal Monitoring</span></p></body></html>"))
+        self.StateOfChargeResult.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
-        self.ControlsBoxTitle.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+        self.BMSOperationsStateBlockTitle.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
-"<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:9pt; font-weight:600; color:#0000ff;\">Controls🔧</span></p></body></html>"))
-        self.ContactorStateBlockTitle.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-"p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Segoe UI Emoji,sans-serif\'; font-size:8pt;\">Contactor State</span></p></body></html>"))
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">BMS Operations</p></body></html>"))
         self.ContactorStateBlockStatusOutput.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
-        self.XX_1_StateBlockStatusOutput.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+        self.StateOfPowerResult.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
-        self.XX_1_StateBlockTitle.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+        self.ContactorStateBlockTitle.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Segoe UI Emoji,sans-serif\'; font-size:8pt;\">XX State</span></p></body></html>"))
-        self.XX_2_StateBlockTitle.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Segoe UI Emoji,sans-serif\'; font-size:8pt;\">Contactor State</span></p></body></html>"))
+        self.ChargeControlStatusStateBlockTitle.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Segoe UI Emoji,sans-serif\'; font-size:8pt;\">XX State</span></p></body></html>"))
-        self.XX_2_StateBlockStatusOutput.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Segoe UI Emoji,sans-serif\'; font-size:8pt;\">Charge Control Status</span></p></body></html>"))
+        self.ManualAutomaticStateBlockTitle.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Segoe UI Emoji,sans-serif\'; font-size:8pt;\">Manual/Automatic</span></p></body></html>"))
+        self.ControlsBoxTitle.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:9pt; font-weight:600; color:#0000ff;\">Controls🔧</span></p></body></html>"))
+        self.cellDropDownMenu.setCurrentText(_translate("BMS_Dashboard", "Select Cell To View"))
+        self.PowerRailFaultTitle.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt; font-weight:600; color:#de0000;\">Power Rail</span></p></body></html>"))
+        self.CommFaultTitle.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt; font-weight:600; color:#de0000;\">Comm</span></p></body></html>"))
+        self.TempFaultTitle.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:7pt; font-weight:600; color:#de0000;\">Under/Over Temp</span></p></body></html>"))
+        self.VoltageFaultTitle.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:7pt; font-weight:600; color:#de0000;\">Under/Over Voltage</span></p></body></html>"))
+        self.PowerRailFaultOutput.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
-        self.XX_3_StateBlockTitle.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-"p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Segoe UI Emoji,sans-serif\'; font-size:8pt;\">XX State</span></p></body></html>"))
-        self.XX_3_StateBlockStatusOutput.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+        self.CurrentFaultOutput.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
-        self.XX_4_StateBlockTitle.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-"p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Segoe UI Emoji,sans-serif\'; font-size:8pt;\">XX State</span></p></body></html>"))
-        self.XX_4_StateBlockStatusOutput.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+        self.VoltageFaultOutput.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.TempFaultOutput.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.PowerRailStatusGOOD.setText(_translate("BMS_Dashboard", "GOOD"))
+        self.PowerRailStatusBAD.setText(_translate("BMS_Dashboard", "BAD"))
+        self.CurrentStatusGOOD.setText(_translate("BMS_Dashboard", "GOOD"))
+        self.CurrentStatusBAD.setText(_translate("BMS_Dashboard", "BAD"))
+        self.TempStatusGOOD_2.setText(_translate("BMS_Dashboard", "GOOD"))
+        self.TempStatusBAD_2.setText(_translate("BMS_Dashboard", "BAD"))
+        self.CommStatusGOOD.setText(_translate("BMS_Dashboard", "GOOD"))
+        self.CommStatusBAD.setText(_translate("BMS_Dashboard", "BAD"))
+        self.CurrentCellNumberBox.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.CurrentFaultTitle.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:7pt; font-weight:600; color:#de0000;\">Under/Over Current</span></p></body></html>"))
+        self.CommFaultOutput.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.VoltageStatusGOOD.setText(_translate("BMS_Dashboard", "GOOD"))
+        self.VoltageStatusBAD.setText(_translate("BMS_Dashboard", "BAD"))
+        self.Segment_1_Voltage.setTabText(self.Segment_1_Voltage.indexOf(self.tab), _translate("BMS_Dashboard", "Cell View"))
+        self.moduleDropDownMenu.setCurrentText(_translate("BMS_Dashboard", "Select Module To View"))
+        self.Cell_1_BalancingVoltage.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.CurrentModuleNumberBox.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.label_9.setText(_translate("BMS_Dashboard", "Balancing Voltage"))
+        self.label_10.setText(_translate("BMS_Dashboard", "Balancing Current"))
+        self.label_11.setText(_translate("BMS_Dashboard", "Balancing Temperature"))
+        self.Cell_2_BalancingVoltage.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Cell_3_BalancingVoltage.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Cell_4_BalancingVoltage.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Cell_7_BalancingVoltage.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Cell_8_BalancingVoltage.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Cell_5_BalancingVoltage.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Cell_6_BalancingVoltage.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Cell_11_BalancingVoltage.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Cell_12_BalancingVoltage.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Cell_9_BalancingVoltage.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Cell_10_BalancingVoltage.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Cell_5_BalancingCurrent.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Cell_3_BalancingCurrent.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Cell_10_BalancingCurrent.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Cell_4_BalancingCurrent.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Cell_8_BalancingCurrent.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Cell_12_BalancingCurrent.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Cell_7_BalancingCurrent.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Cell_1_BalancingCurrent.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Cell_11_BalancingCurrent.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Cell_6_BalancingCurrent.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Cell_2_BalancingCurrent.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Cell_9_BalancingCurrent.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Cell_5_BalancingTemp.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Cell_3_BalancingTemp.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Cell_10_BalancingTemp.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Cell_4_BalancingTemp.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Cell_8_BalancingTemp.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Cell_12_BalancingTemp.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Cell_7_BalancingTemp.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Cell_1_BalancingTemp.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Cell_11_BalancingTemp.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Cell_6_BalancingTemp.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Cell_2_BalancingTemp.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Cell_9_BalancingTemp.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.label_14.setText(_translate("BMS_Dashboard", "1"))
+        self.label_15.setText(_translate("BMS_Dashboard", "2"))
+        self.label_16.setText(_translate("BMS_Dashboard", "3"))
+        self.label_17.setText(_translate("BMS_Dashboard", "4"))
+        self.label_18.setText(_translate("BMS_Dashboard", "5"))
+        self.label_19.setText(_translate("BMS_Dashboard", "6"))
+        self.label_20.setText(_translate("BMS_Dashboard", "7"))
+        self.label_21.setText(_translate("BMS_Dashboard", "8"))
+        self.label_22.setText(_translate("BMS_Dashboard", "9"))
+        self.label_23.setText(_translate("BMS_Dashboard", "10"))
+        self.label_24.setText(_translate("BMS_Dashboard", "11"))
+        self.label_25.setText(_translate("BMS_Dashboard", "12"))
+        self.Segment_1_Voltage.setTabText(self.Segment_1_Voltage.indexOf(self.tab_2), _translate("BMS_Dashboard", "Pack View"))
+        self.slaveDropDownMenu.setCurrentText(_translate("BMS_Dashboard", "Select Slave To View"))
+        self.CurrentSlaveNumberBox.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Segment_1_Voltage_2.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Segment_2_Voltage.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Segment_1_Temp.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Segment_2_Temp.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.label_12.setText(_translate("BMS_Dashboard", "Monitored Segment Voltage"))
+        self.label_13.setText(_translate("BMS_Dashboard", "Monitored Segment Temperature"))
+        self.Segment_3_Voltage.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Segment_4_Temp.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Segment_4_Voltage.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Segment_3_Temp.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Segment_5_Voltage.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Segment_6_Temp.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Segment_6_Voltage.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Segment_5_Temp.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Segment_7_Voltage.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Segment_8_Temp.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Segment_8_Voltage.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Segment_7_Temp.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Segment_9_Voltage.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Segment_11_Voltage.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Segment_11_Temp.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Segment_16_Voltage.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Segment_13_Voltage.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Segment_15_Temp.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Segment_13_Temp.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Segment_10_Temp.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Segment_10_Voltage.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Segment_9_Temp.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Segment_14_Voltage.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Segment_16_Temp.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Segment_12_Temp.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Segment_12_Voltage.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Segment_15_Voltage.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.Segment_14_Temp.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+        self.label_26.setText(_translate("BMS_Dashboard", "1"))
+        self.label_27.setText(_translate("BMS_Dashboard", "2"))
+        self.label_28.setText(_translate("BMS_Dashboard", "3"))
+        self.label_29.setText(_translate("BMS_Dashboard", "4"))
+        self.label_30.setText(_translate("BMS_Dashboard", "2"))
+        self.label_31.setText(_translate("BMS_Dashboard", "1"))
+        self.label_32.setText(_translate("BMS_Dashboard", "4"))
+        self.label_33.setText(_translate("BMS_Dashboard", "3"))
+        self.label_34.setText(_translate("BMS_Dashboard", "5"))
+        self.label_35.setText(_translate("BMS_Dashboard", "6"))
+        self.label_36.setText(_translate("BMS_Dashboard", "5"))
+        self.label_37.setText(_translate("BMS_Dashboard", "7"))
+        self.label_38.setText(_translate("BMS_Dashboard", "6"))
+        self.label_39.setText(_translate("BMS_Dashboard", "8"))
+        self.label_40.setText(_translate("BMS_Dashboard", "8"))
+        self.label_41.setText(_translate("BMS_Dashboard", "7"))
+        self.label_42.setText(_translate("BMS_Dashboard", "9"))
+        self.label_43.setText(_translate("BMS_Dashboard", "10"))
+        self.label_44.setText(_translate("BMS_Dashboard", "9"))
+        self.label_45.setText(_translate("BMS_Dashboard", "11"))
+        self.label_46.setText(_translate("BMS_Dashboard", "10"))
+        self.label_47.setText(_translate("BMS_Dashboard", "12"))
+        self.label_48.setText(_translate("BMS_Dashboard", "12"))
+        self.label_49.setText(_translate("BMS_Dashboard", "11"))
+        self.label_50.setText(_translate("BMS_Dashboard", "13"))
+        self.label_51.setText(_translate("BMS_Dashboard", "14"))
+        self.label_52.setText(_translate("BMS_Dashboard", "13"))
+        self.label_53.setText(_translate("BMS_Dashboard", "15"))
+        self.label_54.setText(_translate("BMS_Dashboard", "14"))
+        self.label_55.setText(_translate("BMS_Dashboard", "16"))
+        self.label_56.setText(_translate("BMS_Dashboard", "16"))
+        self.label_57.setText(_translate("BMS_Dashboard", "15"))
+        self.Segment_1_Voltage.setTabText(self.Segment_1_Voltage.indexOf(self.tab_3), _translate("BMS_Dashboard", "Slave Board View"))
+
 
 if __name__ == "__main__":
     import sys
