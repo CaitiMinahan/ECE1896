@@ -733,6 +733,7 @@ class Ui_BMS_Dashboard(QMainWindow):
         self.CurrentSlaveNumberBox.setPlainText(current_text + selected_item)
 
     # update the GUI with latest diagnostics (values read from STM32)
+    # TODO: eventually, modify the update function to call the serial_parser function for updating the GUI
     def update(self):
         _translate = QtCore.QCoreApplication.translate
 
@@ -742,6 +743,8 @@ class Ui_BMS_Dashboard(QMainWindow):
             # Append data to the existing text
             current_text = self.CriticalFaultsResultBox.toPlainText()
             self.CriticalFaultsResultBox.setPlainText(current_text + data + '\n')
+
+        # TODO: call the serial_parser function and then update the GUI from the variables the function returns: module_number, cell_number and value
 
         # UPDATES FOR THE CELL VIEW TAB
         # TODO: update measure cell voltage (CellVoltageResultBox) according to the cell selected
@@ -769,8 +772,6 @@ class Ui_BMS_Dashboard(QMainWindow):
         # TODO: update the ChargeControlStatusStateBlockStatusOutput according to the cell selected
 
         # NOTE: the input values will be specific to the cell, so it needs to be in a form which specifies the module, cell, and value
-        #   NOTE: for example, reading in the voltage of cell 1 for module 1 would need to be of the form: moduleVal_cellVal_voltageVal
-        #   NOTE: this same data format for the input needs to be consistent for V, I, T, faults, state monitoring, and SOC/SOH/SOP
 
         # UPDATES FOR THE PACK VIEW TAB
         # TODO: update the (Cell_1_BalancingVoltage-Cell_12_BalancingVoltage) according to the module selected
@@ -778,8 +779,6 @@ class Ui_BMS_Dashboard(QMainWindow):
         # TODO: update the (Cell_1_BalancingTemp-Cell_12_BalancingTemp) according to the module selected
 
         # NOTE: the input values will be specific to the module, so it needs to be in a form which specifies the module, cell, and value
-        #   NOTE: for example, reading in the voltage of cell 1 for module 1 would need to be of the form: moduleVal_cellVal_voltageVal
-        #   NOTE: the output boxes will show a pack view of all the cell's V, I and T according to the specific module
 
         # UPDATES FOR THE SLAVE BOARD VIEW TAB
         # TODO: update the (Segment_1_Voltage_2-Segment_16_Voltage) according to the slave selected
