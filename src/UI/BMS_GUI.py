@@ -704,7 +704,7 @@ class Ui_BMS_Dashboard(QMainWindow):
 
         # add elements to the dropdown menus
         self.cellDropDownMenu.addItems(["Select Cell To View", "cell 1", "cell 2", "cell 3", "cell 4", "cell 5", "cell 6", "cell 7", "cell 8", "cell 9", "cell 10", "cell 11", "cell 12"])
-        self.moduleDropDownMenu.addItems(["Select Module To View", "module 1", "module 2", "module 3", "module 4"]) # adding multiple modules for scalability. don't know how many we eventually want
+        self.moduleDropDownMenu.addItems(["Select Module To View", "module 1", "module 2", "module 3", "module 4"]) # TODO: change to be up to 16 modules
         self.slaveDropDownMenu.addItems(["Select Slave To View", "slave 1", "slave 2", "slave 3"])
 
         # Connect the currentIndexChanged signal of the combo box to your slot
@@ -742,9 +742,6 @@ class Ui_BMS_Dashboard(QMainWindow):
             # Append data to the existing text
             current_text = self.CriticalFaultsResultBox.toPlainText()
             self.CriticalFaultsResultBox.setPlainText(current_text + data + '\n')
-
-        # TODO: need to parse the input data to distinguish what type of variable we are reading in (i.e., SOC/SOH, measured V,I,T, fault/flag, etc.)
-        # TODO: might be easier to create separate functions for parsing the input data and then setting conditions according to the bits set
 
         # UPDATES FOR THE CELL VIEW TAB
         # TODO: update measure cell voltage (CellVoltageResultBox) according to the cell selected
