@@ -1,3 +1,4 @@
+import re
 # function for reading in serial data from module 5 in the form of a hex value
 
 # TODO: create a function named parser
@@ -36,4 +37,25 @@
                         # (i.e., value = hex_to_decimal_value)
                         # NOTE: for I'D's 101-110, module = input[7] through input[0]
 # TODO: return module_number, cell_number and value variables assigned above for the function to send to the GUI
+
+def parser(data: str):
+
+    # p_id_idx = 0
+    mod_idx = 0 #1
+    cell_idx = 1 #2
+
+    # remove any characters from data that aren't numeric or '.'
+    data = re.sub(r'[^0-9.]', '', data)
+
+    # p_id = data[p_id_idx]
+    mod = data[mod_idx]
+    cell = data[cell_idx]
+    res = data[2:]
+
+    # if p_id == 7:
+        # convert res to binary
+    res = format(int(res, 16), '08b')  # returns binary value as a string
+
+    # return p_id, mod, cell, res
+    return mod, cell, res
 
