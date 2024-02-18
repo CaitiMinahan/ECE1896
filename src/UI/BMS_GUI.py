@@ -14,10 +14,30 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import *
 import serial
 
+from src.UI.serial_parser import parser
+
 QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
 
 from PyQt5.QtWidgets import QDialog, QComboBox, QVBoxLayout, QPushButton
 import serial.tools.list_ports
+
+
+class SerialReader(QThread):
+    data_received = pyqtSignal(str)
+
+    def __init__(self, serial_port, baud_rate):
+        super().__init__()
+        self.serial_port = serial.Serial(serial_port,
+                                         baud_rate)  # Use the selected COM port and baud rate
+
+    def run(self):
+        while True:
+            try:
+                if self.serial_port.in_waiting:
+                    data = self.serial_port.readline().strip().decode('utf-8', errors='ignore')
+                    self.data_received.emit(data)
+            except Exception as e:
+                print(f"Error reading from serial port: {e}")
 
 class COMPortDialog(QDialog):
     def __init__(self, parent=None):
@@ -57,7 +77,10 @@ class Ui_BMS_Dashboard(QMainWindow):
         if dialog.exec_() == QDialog.Accepted:
             selected_com_port = dialog.get_selected_com_port()
             selected_baud_rate = int(dialog.get_selected_baud_rate())
-            self.serial_port = serial.Serial(selected_com_port, selected_baud_rate)  # Use the selected COM port and baud rate
+            # self.serial_port = serial.Serial(selected_com_port, selected_baud_rate)  # Use the selected COM port and baud rate
+            serial_reader = SerialReader(selected_com_port, selected_baud_rate)
+            serial_reader.data_received.connect(self.handle_data)
+            serial_reader.start()
         else:
             QApplication.quit()  # Close the program if no selection is made
         BMS_Dashboard.setObjectName("self")
@@ -694,7 +717,7 @@ class Ui_BMS_Dashboard(QMainWindow):
         QtCore.QMetaObject.connectSlotsByName(BMS_Dashboard)
 
         # call the handler function so we can use the update method to update the GUI
-        self._handler()
+        # self._handler()
 
         # set up serial comm for COM3 at a baud rate of 9600
         self.timer = QtCore.QTimer()
@@ -734,28 +757,31 @@ class Ui_BMS_Dashboard(QMainWindow):
 
     # update the GUI with latest diagnostics (values read from STM32)
     # TODO: eventually, modify the update function to call the serial_parser function for updating the GUI
-    def update(self):
+    def handle_data(self, data):
         _translate = QtCore.QCoreApplication.translate
 
-        if self.serial_port.in_waiting:
-            data = self.serial_port.readline().strip().decode('utf-8')
+        # if self.serial_port.in_waiting:
+        #
+        #     data = self.serial_port.readline().strip().decode('utf-8', errors='ignore')
+
+            # parser(data)
 
             # Append data to the existing text
-            current_text = self.CriticalFaultsResultBox.toPlainText()
-            self.CriticalFaultsResultBox.setPlainText(current_text + data + '\n')
+        current_text = self.CriticalFaultsResultBox.toPlainText()
+        self.CriticalFaultsResultBox.setPlainText(current_text + data + '\n')
 
         # TODO: call the serial_parser function and then update the GUI from the variables the function returns: module_number, cell_number and value
 
         # UPDATES FOR THE CELL VIEW TAB
         # TODO: update measure cell voltage (CellVoltageResultBox) according to the cell selected
-            # NOTE: this is a TEST, i will need to change this output later
-            current_cell = self.CurrentCellNumberBox.toPlainText()
-            if current_cell == "cell 1":
-                self.CellVoltageResultBox.setPlainText("voltage for:" + current_cell)
+        # NOTE: this is a TEST, i will need to change this output later
+        current_cell = self.CurrentCellNumberBox.toPlainText()
+        if current_cell == "cell 1":
+            self.CellVoltageResultBox.setPlainText("voltage for:" + current_cell)
         # TODO: update measure cell current (CellCurrentResultBox) according to the cell selected
-            # NOTE: this is a TEST, i will need to change this output later
-            elif current_cell == "cell 2":
-                self.CellVoltageResultBox.setPlainText("voltage for cell:" + current_cell)
+        # NOTE: this is a TEST, i will need to change this output later
+        elif current_cell == "cell 2":
+            self.CellVoltageResultBox.setPlainText("voltage for cell:" + current_cell)
         # TODO: update measure cell temp (CellTempResultBox) according to the cell selected
 
         # TODO: update the CriticalFaultsResultBox when a fault is generated according to the cell selected
@@ -789,11 +815,11 @@ class Ui_BMS_Dashboard(QMainWindow):
         #   NOTE: the output boxes will show a grid view of all the segment's V and T according to the specific slave (1-3)
 
     # handler function for setting the refresh rate of the GUI
-    def _handler(self):
-        self.timer = QTimer()
-        self.timer.setInterval(100)  # refreshes every time period
-        self.timer.timeout.connect(self.update)
-        self.timer.start()
+    # def _handler(self):
+    #     self.timer = QTimer()
+    #     self.timer.setInterval(100)  # refreshes every time period
+    #     self.timer.timeout.connect(self.update)
+    #     self.timer.start()
 
     def retranslateUi(self, BMS_Dashboard):
 
