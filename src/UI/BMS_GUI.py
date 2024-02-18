@@ -134,7 +134,7 @@ class Ui_BMS_Dashboard(QMainWindow):
         self.label_8.setGeometry(QtCore.QRect(20, 200, 111, 16))
         self.label_8.setObjectName("label_8")
         self.CriticalFaultsResultBox = QtWidgets.QTextEdit(self.tab)
-        self.CriticalFaultsResultBox.setEnabled(False)
+        self.CriticalFaultsResultBox.setEnabled(True)
         self.CriticalFaultsResultBox.setGeometry(QtCore.QRect(20, 220, 391, 41))
         self.CriticalFaultsResultBox.setObjectName("CriticalFaultsResultBox")
         self.CriticalFaultsBlockTitle = QtWidgets.QTextBrowser(self.tab)
@@ -735,6 +735,13 @@ class Ui_BMS_Dashboard(QMainWindow):
         self.moduleDropDownMenu.currentIndexChanged.connect(self.on_module_dropdown_changed)
         self.slaveDropDownMenu.currentIndexChanged.connect(self.on_slave_dropdown_changed)
 
+        # set all the fault buttons to be GOOD by default
+        self.PowerRailStatusGOOD.setChecked(True)
+        self.CurrentStatusGOOD.setChecked(True)
+        self.VoltageStatusGOOD.setChecked(True)
+        self.TempStatusGOOD_2.setChecked(True)
+        self.CommStatusGOOD.setChecked(True)
+
     # update the GUI according to what is selected from the dropdowns
     def on_cell_dropdown_changed(self):
         # Get the currently selected item from the combo box
@@ -756,21 +763,63 @@ class Ui_BMS_Dashboard(QMainWindow):
         self.CurrentSlaveNumberBox.setPlainText(current_text + selected_item)
 
     # update the GUI with latest diagnostics (values read from STM32)
-    # TODO: eventually, modify the update function to call the serial_parser function for updating the GUI
     def handle_data(self, data):
         _translate = QtCore.QCoreApplication.translate
 
-        # if self.serial_port.in_waiting:
-        #
-        #     data = self.serial_port.readline().strip().decode('utf-8', errors='ignore')
+        # call the parser to receive module, cell and res of the input string passed over serial from the STM32
+        mod, cell, res = parser(data)
 
-            # parser(data)
+        # TODO: Test all of the packet ids
+        # note: If the id is a fault add case statements for each bit in the result and set the error string correctly
+        # faults:
+        # power rail fault - 00000001
+        # comm fault ------- 00000010
+        # overvoltage ------ 00000100
+        # undervoltage ----- 00001000
+        # overtemp --------- 00010000
+        # undertemp -------- 00100000
+        # overcurrent ------ 01000000
+        # undercurrent ----- 10000000
 
-            # Append data to the existing text
+        # Iterate over the bits in the fault string
+        # TODO: we also will need to add logic to check the returned cell and make sure it matches with the dropdown menu
+            # TODO: this is so that we can set the fault for the proper cell, module, etc.
+
+        # create a dictionary of fault tuples for setting the gui outputs per fault input
+        fault_mapping = {
+            7: (self.PowerRailFaultOutput, self.PowerRailStatusGOOD, self.PowerRailStatusBAD),
+            6: (self.CommFaultOutput, self.CommStatusGOOD, self.CommStatusBAD),
+            5: (self.VoltageFaultOutput, self.VoltageStatusGOOD, self.VoltageStatusBAD),
+            4: (self.VoltageFaultOutput, self.VoltageStatusGOOD, self.VoltageStatusBAD),
+            3: (self.TempFaultOutput, self.TempStatusGOOD_2, self.TempStatusBAD_2),
+            2: (self.TempFaultOutput, self.TempStatusGOOD_2, self.TempStatusBAD_2),
+            1: (self.CurrentFaultOutput, self.CurrentStatusGOOD, self.CurrentStatusBAD),
+            0: (self.CurrentFaultOutput, self.CurrentStatusGOOD, self.CurrentStatusBAD),
+        }
+
+        simultaneous_faults = []
+
+        # indexes the fault_mapping, check if the index is 1
+        for index, (output, status_good, status_bad) in fault_mapping.items():
+            if int(res[index]) == 1:
+                simultaneous_faults.append(index)
+
+        # clear the faults
+        for output, status_good, status_bad in fault_mapping.values():
+            output.setPlainText(" ")
+            status_good.setChecked(True)
+            status_bad.setChecked(False)
+
+        # set the gui output boxes according to the fault bits
+        for index in simultaneous_faults:
+            output, status_good, status_bad = fault_mapping[index]
+            output.setPlainText("FAULT")
+            status_good.setChecked(False)
+            status_bad.setChecked(True)
+
+        # Append data to the existing text
         current_text = self.CriticalFaultsResultBox.toPlainText()
-        self.CriticalFaultsResultBox.setPlainText(current_text + data + '\n')
-
-        # TODO: call the serial_parser function and then update the GUI from the variables the function returns: module_number, cell_number and value
+        self.CriticalFaultsResultBox.setPlainText(f'{current_text}Module #{mod}, Cell #{cell}, Fault Code: {res}\n')
 
         # UPDATES FOR THE CELL VIEW TAB
         # TODO: update measure cell voltage (CellVoltageResultBox) according to the cell selected
