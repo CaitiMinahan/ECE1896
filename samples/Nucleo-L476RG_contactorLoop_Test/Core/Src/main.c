@@ -18,12 +18,10 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include <stdbool.h>
-#include <stdio.h>
-
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <stdio.h>
+#include <stdbool.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -142,6 +140,8 @@ void clearCellFault(Cell* cell, CellFault fault) {
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+CAN_HandleTypeDef hcan1;
+
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
@@ -152,12 +152,21 @@ UART_HandleTypeDef huart2;
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
+static void MX_CAN1_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+CAN_TxHeaderTypeDef TxHeader;
+CAN_RxHeaderTypeDef RxHeader;
+
+uint8_t TxData[8];
+uint8_t RxData[8];
+
+uint32_t TxMailbox;
 
 /* USER CODE END 0 */
 
@@ -213,7 +222,26 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART2_UART_Init();
+  MX_CAN1_Init();
   /* USER CODE BEGIN 2 */
+
+  HAL_CAN_Start(&hcan1);
+
+  // Activate the notification
+  HAL_CAN_ActivateNotification(&hcan1, CAN_IT_RX_FIFO0_MSG_PENDING);
+
+  TxHeader.DLC = 2; // data length
+  TxHeader.IDE = CAN_ID_STD;
+  TxHeader.RTR = CAN_RTR_DATA;
+  TxHeader.StdId = 0x446; // ID
+
+//  TxData[0] = 200; // ms Delay
+//  TxData[1] = 20;  // loop rep
+
+  // Initializing
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, 1);
+  HAL_Delay(1000);
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, 0);
 
   /* USER CODE END 2 */
 
@@ -222,6 +250,9 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
+
+
+	/* USER CODE BEGIN 3 */
 
 	  if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_9) && !HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_8)){
 		  // Turn ON LED
@@ -239,12 +270,15 @@ int main(void)
 		  sprintf(FaultStr, "%04X", Fault);
 
 		  // Write to UART Over Temp Fault
-		  HAL_UART_Transmit(&huart2, (uint8_t*)FaultStr, sizeof(FaultStr), 10);
+		  HAL_UART_Transmit(&huart2, (uint8_t*)FaultStr, sizeof(FaultStr), 100);
 
 		  // Print to UART for Debug
 		  uint8_t Test[] = " OVER_TEMP_FAULT\r\n"; //Data to send
-		  HAL_UART_Transmit(&huart2,Test,sizeof(Test),10);// Sending in normal mode
-		  HAL_Delay(1000);
+		  HAL_UART_Transmit(&huart2,Test,sizeof(Test),100);// Sending in normal mode
+		  HAL_Delay(100);
+
+		  // Write to CAN Over Temp Fault
+		  HAL_CAN_AddTxMessage(&hcan1, &TxHeader, FaultStr, &TxMailbox);
 
 		  // Clear the Cell Over Temp Fault
 		  clearCellFault(&cell0, OVER_TEMP_FAULT);
@@ -268,13 +302,16 @@ int main(void)
 		  char FaultStr[5]; // Buffer to hold the result string
 		  sprintf(FaultStr, "%04X", Fault);
 
-		  // Write to UART Over Temp Fault
-		  HAL_UART_Transmit(&huart2, (uint8_t*)FaultStr, sizeof(FaultStr), 10);
+		  // Write to UART Over Current Fault
+		  HAL_UART_Transmit(&huart2, (uint8_t*)FaultStr, sizeof(FaultStr), 100);
 
 		  // Print to UART for Debug
 		  uint8_t Test[] = " OVER_CURRENT_FAULT\r\n"; //Data to send
-		  HAL_UART_Transmit(&huart2,Test,sizeof(Test),10);// Sending in normal mode
-		  HAL_Delay(1000);
+		  HAL_UART_Transmit(&huart2,Test,sizeof(Test),100);// Sending in normal mode
+		  HAL_Delay(100);
+
+		  // Write to CAN Over Current Fault
+		  HAL_CAN_AddTxMessage(&hcan1, &TxHeader, FaultStr, &TxMailbox);
 
 		  // Clear the Cell Over Current Fault
 		  clearCellFault(&cell0, OVER_CURRENT_FAULT);
@@ -300,13 +337,16 @@ int main(void)
 		  char FaultStr[5]; // Buffer to hold the result string
 		  sprintf(FaultStr, "%04X", Fault);
 
-		  // Write to UART Over Temp Fault
-		  HAL_UART_Transmit(&huart2, (uint8_t*)FaultStr, sizeof(FaultStr), 10);
+		  // Write to UART Over Voltage Fault
+		  HAL_UART_Transmit(&huart2, (uint8_t*)FaultStr, sizeof(FaultStr), 100);
 
 		  // Print to UART for Debug
 		  uint8_t Test[] = " UNDER_VOLTAGE_FAULT and OVER_CURRENT_FAULT\r\n"; //Data to send
-		  HAL_UART_Transmit(&huart2,Test,sizeof(Test),10);// Sending in normal mode
-		  HAL_Delay(1000);
+		  HAL_UART_Transmit(&huart2,Test,sizeof(Test),100);// Sending in normal mode
+		  HAL_Delay(100);
+
+		  // Write to CAN Over Voltage Fault
+		  HAL_CAN_AddTxMessage(&hcan1, &TxHeader, FaultStr, &TxMailbox);
 
 		  // Clear the Cell Over Voltage Fault
 		  clearCellFault(&cell0, UNDER_VOLTAGE_FAULT);
@@ -317,7 +357,6 @@ int main(void)
 		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, 0);
 	  }
 
-    /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
 }
@@ -372,6 +411,58 @@ void SystemClock_Config(void)
 }
 
 /**
+  * @brief CAN1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_CAN1_Init(void)
+{
+
+  /* USER CODE BEGIN CAN1_Init 0 */
+
+  /* USER CODE END CAN1_Init 0 */
+
+  /* USER CODE BEGIN CAN1_Init 1 */
+
+  /* USER CODE END CAN1_Init 1 */
+  hcan1.Instance = CAN1;
+  hcan1.Init.Prescaler = 32;
+  hcan1.Init.Mode = CAN_MODE_NORMAL;
+  hcan1.Init.SyncJumpWidth = CAN_SJW_1TQ;
+  hcan1.Init.TimeSeg1 = CAN_BS1_2TQ;
+  hcan1.Init.TimeSeg2 = CAN_BS2_2TQ;
+  hcan1.Init.TimeTriggeredMode = DISABLE;
+  hcan1.Init.AutoBusOff = DISABLE;
+  hcan1.Init.AutoWakeUp = DISABLE;
+  hcan1.Init.AutoRetransmission = DISABLE;
+  hcan1.Init.ReceiveFifoLocked = DISABLE;
+  hcan1.Init.TransmitFifoPriority = DISABLE;
+  if (HAL_CAN_Init(&hcan1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN CAN1_Init 2 */
+
+  CAN_FilterTypeDef canfilterconfig;
+
+  canfilterconfig.FilterActivation = CAN_FILTER_ENABLE;
+  canfilterconfig.FilterBank = 18;  // which filter bank to use from the assigned ones
+  canfilterconfig.FilterFIFOAssignment = CAN_FILTER_FIFO0;
+  canfilterconfig.FilterIdHigh = 0x103<<5; // ID of external ECU
+  canfilterconfig.FilterIdLow = 0;
+  canfilterconfig.FilterMaskIdHigh = 0x103<<5;
+  canfilterconfig.FilterMaskIdLow = 0x0000;
+  canfilterconfig.FilterMode = CAN_FILTERMODE_IDMASK;
+  canfilterconfig.FilterScale = CAN_FILTERSCALE_32BIT;
+  canfilterconfig.SlaveStartFilterBank = 20;  // how many filters to assign to the CAN1 (master can)
+
+  HAL_CAN_ConfigFilter(&hcan1, &canfilterconfig);
+
+  /* USER CODE END CAN1_Init 2 */
+
+}
+
+/**
   * @brief USART2 Initialization Function
   * @param None
   * @retval None
@@ -387,7 +478,7 @@ static void MX_USART2_UART_Init(void)
 
   /* USER CODE END USART2_Init 1 */
   huart2.Instance = USART2;
-  huart2.Init.BaudRate = 115200;
+  huart2.Init.BaudRate = 9600;
   huart2.Init.WordLength = UART_WORDLENGTH_8B;
   huart2.Init.StopBits = UART_STOPBITS_1;
   huart2.Init.Parity = UART_PARITY_NONE;
