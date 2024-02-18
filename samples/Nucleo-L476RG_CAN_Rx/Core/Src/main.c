@@ -122,8 +122,9 @@ int main(void)
   TxHeader.RTR = CAN_RTR_DATA;
   TxHeader.StdId = 0x103; // ID
 
-  TxData[0] = 50; //ms delay
+  TxData[0] = 200; //ms delay
   TxData[1] = 20; //loop rep
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -134,11 +135,15 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
+	  HAL_Delay(1000);
+
 	  if (datacheck){
 		  // blink the LED
 		  for (int i = 0; i<RxData[1]; i++){
+//			  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, 1);
 			  HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
 			  HAL_Delay(RxData[0]);
+//			  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, 0);
 		  }
 
 		  datacheck = 0;
@@ -165,16 +170,23 @@ void SystemClock_Config(void)
     Error_Handler();
   }
 
+  /** Configure LSE Drive Capability
+  */
+  HAL_PWR_EnableBkUpAccess();
+  __HAL_RCC_LSEDRIVE_CONFIG(RCC_LSEDRIVE_LOW);
+
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
-  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSE|RCC_OSCILLATORTYPE_MSI;
+  RCC_OscInitStruct.LSEState = RCC_LSE_ON;
+  RCC_OscInitStruct.MSIState = RCC_MSI_ON;
+  RCC_OscInitStruct.MSICalibrationValue = 0;
+  RCC_OscInitStruct.MSIClockRange = RCC_MSIRANGE_6;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_MSI;
   RCC_OscInitStruct.PLL.PLLM = 1;
-  RCC_OscInitStruct.PLL.PLLN = 10;
+  RCC_OscInitStruct.PLL.PLLN = 40;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV7;
   RCC_OscInitStruct.PLL.PLLQ = RCC_PLLQ_DIV2;
   RCC_OscInitStruct.PLL.PLLR = RCC_PLLR_DIV2;
@@ -196,6 +208,10 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+
+  /** Enable MSI Auto calibration
+  */
+  HAL_RCCEx_EnableMSIPLLMode();
 }
 
 /**
@@ -259,11 +275,11 @@ static void MX_USART2_UART_Init(void)
 {
 
   /* USER CODE BEGIN USART2_Init 0 */
-
+//
   /* USER CODE END USART2_Init 0 */
 
   /* USER CODE BEGIN USART2_Init 1 */
-
+//
   /* USER CODE END USART2_Init 1 */
   huart2.Instance = USART2;
   huart2.Init.BaudRate = 115200;
@@ -280,7 +296,7 @@ static void MX_USART2_UART_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN USART2_Init 2 */
-
+//
   /* USER CODE END USART2_Init 2 */
 
 }
