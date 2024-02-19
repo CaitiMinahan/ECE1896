@@ -14,10 +14,29 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import *
 import serial
 
+from src.UI.serial_parser import parser
+
 QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
 
 from PyQt5.QtWidgets import QDialog, QComboBox, QVBoxLayout, QPushButton
 import serial.tools.list_ports
+
+# This class is designed to read data from a serial port in a separate thread
+class SerialReader(QThread):
+    data_received = pyqtSignal(str)  # defines a custom signal data_received, which will be emitted whenever data is received from the serial port, which in this case is a string
+
+    def __init__(self, serial_port, baud_rate):
+        super().__init__()
+        self.serial_port = serial.Serial(serial_port, baud_rate)  # initialize a serial port and us the selected COM port and baud rate
+
+    def run(self):
+        while True:
+            try:
+                if self.serial_port.in_waiting:  # This condition checks if there is data available to be read from the serial port buffer
+                    data = self.serial_port.readline().strip().decode('utf-8', errors='ignore')  #  If there is data available, this line reads a line from the serial port, strips any leading or trailing whitespace, decodes the bytes into a UTF-8 encoded string, and assigns it to the variable
+                    self.data_received.emit(data)  # allows the received data to be processed or displayed in the user interface
+            except Exception as e:
+                print(f"Error reading from serial port: {e}")
 
 class COMPortDialog(QDialog):
     def __init__(self, parent=None):
@@ -53,11 +72,13 @@ class COMPortDialog(QDialog):
 
 class Ui_BMS_Dashboard(QMainWindow):
     def setupUi(self):
-        dialog = COMPortDialog()
-        if dialog.exec_() == QDialog.Accepted:
+        dialog = COMPortDialog()  # allow the user to select a COM port and baud rate for serial communication
+        if dialog.exec_() == QDialog.Accepted: #  If the user accepted the dialog, the code proceeds to set up the serial communication with the selected COM port and baud rate
             selected_com_port = dialog.get_selected_com_port()
             selected_baud_rate = int(dialog.get_selected_baud_rate())
-            self.serial_port = serial.Serial(selected_com_port, selected_baud_rate)  # Use the selected COM port and baud rate
+            serial_reader = SerialReader(selected_com_port, selected_baud_rate)
+            serial_reader.data_received.connect(self.handle_data)
+            serial_reader.start()
         else:
             QApplication.quit()  # Close the program if no selection is made
         BMS_Dashboard.setObjectName("self")
@@ -111,7 +132,7 @@ class Ui_BMS_Dashboard(QMainWindow):
         self.label_8.setGeometry(QtCore.QRect(20, 200, 111, 16))
         self.label_8.setObjectName("label_8")
         self.CriticalFaultsResultBox = QtWidgets.QTextEdit(self.tab)
-        self.CriticalFaultsResultBox.setEnabled(False)
+        self.CriticalFaultsResultBox.setEnabled(True)
         self.CriticalFaultsResultBox.setGeometry(QtCore.QRect(20, 220, 391, 41))
         self.CriticalFaultsResultBox.setObjectName("CriticalFaultsResultBox")
         self.CriticalFaultsBlockTitle = QtWidgets.QTextBrowser(self.tab)
@@ -693,24 +714,28 @@ class Ui_BMS_Dashboard(QMainWindow):
         self.Segment_1_Voltage.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(BMS_Dashboard)
 
-        # call the handler function so we can use the update method to update the GUI
-        self._handler()
-
-        # set up serial comm for COM3 at a baud rate of 9600
         self.timer = QtCore.QTimer()
         self.timer.timeout.connect(self.update)
         self.timer.start(100)  # Adjust the interval as needed
-        # self.serial_port = serial.Serial('COM3', 9600)  # Open serial port
 
         # add elements to the dropdown menus
         self.cellDropDownMenu.addItems(["Select Cell To View", "cell 1", "cell 2", "cell 3", "cell 4", "cell 5", "cell 6", "cell 7", "cell 8", "cell 9", "cell 10", "cell 11", "cell 12"])
-        self.moduleDropDownMenu.addItems(["Select Module To View", "module 1", "module 2", "module 3", "module 4"]) # adding multiple modules for scalability. don't know how many we eventually want
+        self.moduleDropDownMenu.addItems(["Select Module To View", "module 1", "module 2", "module 3", "module 4"]) # TODO: change to be up to 16 modules
         self.slaveDropDownMenu.addItems(["Select Slave To View", "slave 1", "slave 2", "slave 3"])
 
         # Connect the currentIndexChanged signal of the combo box to your slot
         self.cellDropDownMenu.currentIndexChanged.connect(self.on_cell_dropdown_changed)
         self.moduleDropDownMenu.currentIndexChanged.connect(self.on_module_dropdown_changed)
         self.slaveDropDownMenu.currentIndexChanged.connect(self.on_slave_dropdown_changed)
+
+        # set all the fault buttons to be GOOD by default
+        self.PowerRailStatusGOOD.setChecked(True)
+        self.CurrentStatusGOOD.setChecked(True)
+        self.VoltageStatusGOOD.setChecked(True)
+        self.TempStatusGOOD_2.setChecked(True)
+        self.CommStatusGOOD.setChecked(True)
+
+        # TODO: set default values for all widgets where needed
 
     # update the GUI according to what is selected from the dropdowns
     def on_cell_dropdown_changed(self):
@@ -732,31 +757,76 @@ class Ui_BMS_Dashboard(QMainWindow):
         current_text = self.CurrentSlaveNumberBox.toPlainText()
         self.CurrentSlaveNumberBox.setPlainText(current_text + selected_item)
 
-    # update the GUI with latest diagnostics (values read from STM32)
-    def update(self):
+    # update the GUI with latest diagnostics read over serial (values read from STM32)
+    def handle_data(self, data):
         _translate = QtCore.QCoreApplication.translate
 
-        if self.serial_port.in_waiting:
-            data = self.serial_port.readline().strip().decode('utf-8')
+        # call the parser to receive module, cell and res of the input string passed over serial from the STM32
+        mod, cell, res = parser(data)
 
-            # Append data to the existing text
-            current_text = self.CriticalFaultsResultBox.toPlainText()
-            self.CriticalFaultsResultBox.setPlainText(current_text + data + '\n')
+        # TODO: Test all of the packet ids
+        # note: If the id is a fault add case statements for each bit in the result and set the error string correctly
+        # faults:
+        # power rail fault - 00000001
+        # comm fault ------- 00000010
+        # overvoltage ------ 00000100
+        # undervoltage ----- 00001000
+        # overtemp --------- 00010000
+        # undertemp -------- 00100000
+        # overcurrent ------ 01000000
+        # undercurrent ----- 10000000
+
+        # Iterate over the bits in the fault string
+        # TODO: we also will need to add logic to check the returned cell and make sure it matches with the dropdown menu
+            # TODO: this is so that we can set the fault for the proper cell, module, etc.
+
+        # create a dictionary of fault tuples for setting the gui outputs per fault input
+        fault_mapping = {
+            7: (self.PowerRailFaultOutput, self.PowerRailStatusGOOD, self.PowerRailStatusBAD),
+            6: (self.CommFaultOutput, self.CommStatusGOOD, self.CommStatusBAD),
+            5: (self.VoltageFaultOutput, self.VoltageStatusGOOD, self.VoltageStatusBAD),
+            4: (self.VoltageFaultOutput, self.VoltageStatusGOOD, self.VoltageStatusBAD),
+            3: (self.TempFaultOutput, self.TempStatusGOOD_2, self.TempStatusBAD_2),
+            2: (self.TempFaultOutput, self.TempStatusGOOD_2, self.TempStatusBAD_2),
+            1: (self.CurrentFaultOutput, self.CurrentStatusGOOD, self.CurrentStatusBAD),
+            0: (self.CurrentFaultOutput, self.CurrentStatusGOOD, self.CurrentStatusBAD),
+        }
+
+        simultaneous_faults = []
+
+        # indexes the fault_mapping, check if the index is 1
+        for index, (output, status_good, status_bad) in fault_mapping.items():
+            if int(res[index]) == 1:
+                simultaneous_faults.append(index)
+
+        # clear the faults
+        for output, status_good, status_bad in fault_mapping.values():
+            output.setPlainText(" ")
+            status_good.setChecked(True)
+            status_bad.setChecked(False)
+
+        # set the gui output boxes according to the fault bits
+        for index in simultaneous_faults:
+            output, status_good, status_bad = fault_mapping[index]
+            output.setPlainText("FAULT")
+            status_good.setChecked(False)
+            status_bad.setChecked(True)
+
+        # Append data to the existing text
+        current_text = self.CriticalFaultsResultBox.toPlainText()
+        self.CriticalFaultsResultBox.setPlainText(f'{current_text}Module #{mod}, Cell #{cell}, Fault Code: {res}\n')
 
         # UPDATES FOR THE CELL VIEW TAB
         # TODO: update measure cell voltage (CellVoltageResultBox) according to the cell selected
-            # NOTE: this is a TEST, i will need to change this output later
-            current_cell = self.CurrentCellNumberBox.toPlainText()
-            if current_cell == "cell 1":
-                self.CellVoltageResultBox.setPlainText("voltage for:" + current_cell)
+        # NOTE: this is a TEST, i will need to change this output later
+        current_cell = self.CurrentCellNumberBox.toPlainText()
+        if current_cell == "cell 1":
+            self.CellVoltageResultBox.setPlainText("voltage for:" + current_cell)
         # TODO: update measure cell current (CellCurrentResultBox) according to the cell selected
-            # NOTE: this is a TEST, i will need to change this output later
-            elif current_cell == "cell 2":
-                self.CellVoltageResultBox.setPlainText("voltage for cell:" + current_cell)
+        # NOTE: this is a TEST, i will need to change this output later
+        elif current_cell == "cell 2":
+            self.CellVoltageResultBox.setPlainText("voltage for cell:" + current_cell)
         # TODO: update measure cell temp (CellTempResultBox) according to the cell selected
-
-        # TODO: update the CriticalFaultsResultBox when a fault is generated according to the cell selected
-        # TODO: check boxes for each fault category depending on the state (good by default)
 
         # TODO: update the StateOfChargeResult according to the cell selected
         # TODO: update the StateOfHealthResult according to the cell selected
@@ -769,8 +839,6 @@ class Ui_BMS_Dashboard(QMainWindow):
         # TODO: update the ChargeControlStatusStateBlockStatusOutput according to the cell selected
 
         # NOTE: the input values will be specific to the cell, so it needs to be in a form which specifies the module, cell, and value
-        #   NOTE: for example, reading in the voltage of cell 1 for module 1 would need to be of the form: moduleVal_cellVal_voltageVal
-        #   NOTE: this same data format for the input needs to be consistent for V, I, T, faults, state monitoring, and SOC/SOH/SOP
 
         # UPDATES FOR THE PACK VIEW TAB
         # TODO: update the (Cell_1_BalancingVoltage-Cell_12_BalancingVoltage) according to the module selected
@@ -778,8 +846,6 @@ class Ui_BMS_Dashboard(QMainWindow):
         # TODO: update the (Cell_1_BalancingTemp-Cell_12_BalancingTemp) according to the module selected
 
         # NOTE: the input values will be specific to the module, so it needs to be in a form which specifies the module, cell, and value
-        #   NOTE: for example, reading in the voltage of cell 1 for module 1 would need to be of the form: moduleVal_cellVal_voltageVal
-        #   NOTE: the output boxes will show a pack view of all the cell's V, I and T according to the specific module
 
         # UPDATES FOR THE SLAVE BOARD VIEW TAB
         # TODO: update the (Segment_1_Voltage_2-Segment_16_Voltage) according to the slave selected
@@ -788,13 +854,6 @@ class Ui_BMS_Dashboard(QMainWindow):
         # NOTE: the input values will be specific to the slave, so it needs to be in a form which specifies the slave, segment, and value
         #   NOTE: for example, reading in the voltage of segment 1 for slave 1 would need to be of the form: slaveVal_segmentVal_voltageVal
         #   NOTE: the output boxes will show a grid view of all the segment's V and T according to the specific slave (1-3)
-
-    # handler function for setting the refresh rate of the GUI
-    def _handler(self):
-        self.timer = QTimer()
-        self.timer.setInterval(100)  # refreshes every time period
-        self.timer.timeout.connect(self.update)
-        self.timer.start()
 
     def retranslateUi(self, BMS_Dashboard):
 
