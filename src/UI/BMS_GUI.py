@@ -719,8 +719,11 @@ class Ui_BMS_Dashboard(QMainWindow):
         self.timer.start(100)  # Adjust the interval as needed
 
         # add elements to the dropdown menus
-        self.cellDropDownMenu.addItems(["Select Cell To View", "cell 1", "cell 2", "cell 3", "cell 4", "cell 5", "cell 6", "cell 7", "cell 8", "cell 9", "cell 10", "cell 11", "cell 12"])
-        self.moduleDropDownMenu.addItems(["Select Module To View", "module 1", "module 2", "module 3", "module 4"]) # TODO: change to be up to 16 modules
+        self.cellDropDownMenu.addItems(["Select Cell To View", "cell 1", "cell 2", "cell 3", "cell 4", "cell 5",
+                                        "cell 6", "cell 7", "cell 8", "cell 9", "cell 10", "cell 11", "cell 12"])
+        self.moduleDropDownMenu.addItems(["Select Module To View", "module 1", "module 2", "module 3", "module 4",
+                                          "module 5", "module 6", "module 7", "module 8", "module 9", "module 10",
+                                          "module 11", "module 12", "module 13", "module 14", "module 15", "module 16"])
         self.slaveDropDownMenu.addItems(["Select Slave To View", "slave 1", "slave 2", "slave 3"])
 
         # Connect the currentIndexChanged signal of the combo box to your slot
@@ -728,14 +731,99 @@ class Ui_BMS_Dashboard(QMainWindow):
         self.moduleDropDownMenu.currentIndexChanged.connect(self.on_module_dropdown_changed)
         self.slaveDropDownMenu.currentIndexChanged.connect(self.on_slave_dropdown_changed)
 
-        # set all the fault buttons to be GOOD by default
+        # Cell View tab default values:
         self.PowerRailStatusGOOD.setChecked(True)
         self.CurrentStatusGOOD.setChecked(True)
         self.VoltageStatusGOOD.setChecked(True)
         self.TempStatusGOOD_2.setChecked(True)
         self.CommStatusGOOD.setChecked(True)
+        self.CellVoltageResultBox.setPlainText("0")
+        self.CellCurrentResultBox.setPlainText("0")
+        self.CellTempResultBox.setPlainText("0")
+        self.CriticalFaultsResultBox.setPlainText("0")
+        self.StateOfChargeResult.setPlainText("0")
+        self.StateOfHealthResult.setPlainText("0")
+        self.StateOfPowerResult.setPlainText("0")
+        self.ContactorStateBlockStatusOutput.setPlainText("0")
+        self.ManualAutomaticStateBlockStatusOutput.setPlainText("0")
+        self.BalancingStateBlockStatusOutput.setPlainText("0")
+        self.BMSOperationsStateBlockStatusOutput.setPlainText("0")
+        self.ChargeControlStatusStateBlockStatusOutput.setPlainText("0")
 
-        # TODO: set default values for all widgets where needed
+        # Pack View tab default values:
+        self.Cell_1_BalancingVoltage.setPlainText("0")
+        self.Cell_2_BalancingVoltage.setPlainText("0")
+        self.Cell_3_BalancingVoltage.setPlainText("0")
+        self.Cell_4_BalancingVoltage.setPlainText("0")
+        self.Cell_5_BalancingVoltage.setPlainText("0")
+        self.Cell_6_BalancingVoltage.setPlainText("0")
+        self.Cell_7_BalancingVoltage.setPlainText("0")
+        self.Cell_8_BalancingVoltage.setPlainText("0")
+        self.Cell_9_BalancingVoltage.setPlainText("0")
+        self.Cell_10_BalancingVoltage.setPlainText("0")
+        self.Cell_11_BalancingVoltage.setPlainText("0")
+        self.Cell_12_BalancingVoltage.setPlainText("0")
+
+        self.Cell_1_BalancingCurrent.setPlainText("0")
+        self.Cell_2_BalancingCurrent.setPlainText("0")
+        self.Cell_3_BalancingCurrent.setPlainText("0")
+        self.Cell_4_BalancingCurrent.setPlainText("0")
+        self.Cell_5_BalancingCurrent.setPlainText("0")
+        self.Cell_6_BalancingCurrent.setPlainText("0")
+        self.Cell_7_BalancingCurrent.setPlainText("0")
+        self.Cell_8_BalancingCurrent.setPlainText("0")
+        self.Cell_9_BalancingCurrent.setPlainText("0")
+        self.Cell_10_BalancingCurrent.setPlainText("0")
+        self.Cell_11_BalancingCurrent.setPlainText("0")
+        self.Cell_12_BalancingCurrent.setPlainText("0")
+
+        self.Cell_1_BalancingTemp.setPlainText("0")
+        self.Cell_2_BalancingTemp.setPlainText("0")
+        self.Cell_3_BalancingTemp.setPlainText("0")
+        self.Cell_4_BalancingTemp.setPlainText("0")
+        self.Cell_5_BalancingTemp.setPlainText("0")
+        self.Cell_6_BalancingTemp.setPlainText("0")
+        self.Cell_7_BalancingTemp.setPlainText("0")
+        self.Cell_8_BalancingTemp.setPlainText("0")
+        self.Cell_9_BalancingTemp.setPlainText("0")
+        self.Cell_10_BalancingTemp.setPlainText("0")
+        self.Cell_11_BalancingTemp.setPlainText("0")
+        self.Cell_12_BalancingTemp.setPlainText("0")
+
+        # Slave Board View tab default values:
+        self.Segment_1_Voltage_2.setPlainText("0")
+        self.Segment_2_Voltage.setPlainText("0")
+        self.Segment_3_Voltage.setPlainText("0")
+        self.Segment_4_Voltage.setPlainText("0")
+        self.Segment_5_Voltage.setPlainText("0")
+        self.Segment_6_Voltage.setPlainText("0")
+        self.Segment_7_Voltage.setPlainText("0")
+        self.Segment_8_Voltage.setPlainText("0")
+        self.Segment_9_Voltage.setPlainText("0")
+        self.Segment_10_Voltage.setPlainText("0")
+        self.Segment_11_Voltage.setPlainText("0")
+        self.Segment_12_Voltage.setPlainText("0")
+        self.Segment_13_Voltage.setPlainText("0")
+        self.Segment_14_Voltage.setPlainText("0")
+        self.Segment_15_Voltage.setPlainText("0")
+        self.Segment_15_Voltage.setPlainText("0")
+
+        self.Segment_1_Temp.setPlainText("0")
+        self.Segment_2_Temp.setPlainText("0")
+        self.Segment_3_Temp.setPlainText("0")
+        self.Segment_4_Temp.setPlainText("0")
+        self.Segment_5_Temp.setPlainText("0")
+        self.Segment_6_Temp.setPlainText("0")
+        self.Segment_7_Temp.setPlainText("0")
+        self.Segment_8_Temp.setPlainText("0")
+        self.Segment_9_Temp.setPlainText("0")
+        self.Segment_10_Temp.setPlainText("0")
+        self.Segment_11_Temp.setPlainText("0")
+        self.Segment_12_Temp.setPlainText("0")
+        self.Segment_13_Temp.setPlainText("0")
+        self.Segment_14_Temp.setPlainText("0")
+        self.Segment_15_Temp.setPlainText("0")
+        self.Segment_16_Temp.setPlainText("0")
 
     # update the GUI according to what is selected from the dropdowns
     def on_cell_dropdown_changed(self):
@@ -766,6 +854,17 @@ class Ui_BMS_Dashboard(QMainWindow):
 
         # TODO: Test all of the packet ids
         # note: If the id is a fault add case statements for each bit in the result and set the error string correctly
+        # note: sample case statements for testing the packet ID, where each case has the implementation for reading in the packets and updating the GUI
+        # cases = {
+        #         1: lambda: code for voltage reading,
+        #         2: lambda: code for current reading ,
+        #         3: lambda: code for temp reading,
+        #         4: lambda: code for SOH,
+        #         5: lambda: code for SOC,
+        #         6: lambda: code for SOP,
+        #         7: lambda: code for faults,
+        #     }
+
         # faults:
         # power rail fault - 00000001
         # comm fault ------- 00000010
@@ -777,9 +876,6 @@ class Ui_BMS_Dashboard(QMainWindow):
         # undercurrent ----- 10000000
 
         # Iterate over the bits in the fault string
-        # TODO: we also will need to add logic to check the returned cell and make sure it matches with the dropdown menu
-            # TODO: this is so that we can set the fault for the proper cell, module, etc.
-
         # create a dictionary of fault tuples for setting the gui outputs per fault input
         fault_mapping = {
             7: (self.PowerRailFaultOutput, self.PowerRailStatusGOOD, self.PowerRailStatusBAD),
@@ -815,22 +911,40 @@ class Ui_BMS_Dashboard(QMainWindow):
         # Append data to the existing text
         current_text = self.CriticalFaultsResultBox.toPlainText()
         self.CriticalFaultsResultBox.setPlainText(f'{current_text}Module #{mod}, Cell #{cell}, Fault Code: {res}\n')
+        # TODO: see if we can have the box stick to the bottom when new ones get appended
 
         # UPDATES FOR THE CELL VIEW TAB
-        # TODO: update measure cell voltage (CellVoltageResultBox) according to the cell selected
-        # NOTE: this is a TEST, i will need to change this output later
+        # note: update measure cell voltage (CellVoltageResultBox) according to the cell selected
+        # note: we can just pass 'res' for setting the voltage b/c the data type for 'res' is dependent on the ID, which is handled in the case statements
+        # TODO: place each of these implementations in their proper case statements
         current_cell = self.CurrentCellNumberBox.toPlainText()
-        if current_cell == "cell 1":
-            self.CellVoltageResultBox.setPlainText("voltage for:" + current_cell)
-        # TODO: update measure cell current (CellCurrentResultBox) according to the cell selected
-        # NOTE: this is a TEST, i will need to change this output later
-        elif current_cell == "cell 2":
-            self.CellVoltageResultBox.setPlainText("voltage for cell:" + current_cell)
+        # make sure the cell selected displays the cell voltage sent from the reading
+        if current_cell == cell:
+            cell_voltage = res
+            self.CellVoltageResultBox.setPlainText(cell_voltage)
+        # note: update measure cell current (CellCurrentResultBox) according to the cell selected
+        # make sure the cell selected displays the cell voltage sent from the reading
+        if current_cell == cell:
+            cell_current = res
+            self.CellCurrentResultBox.setPlainText(cell_current)
         # TODO: update measure cell temp (CellTempResultBox) according to the cell selected
+        # make sure the cell selected displays the cell voltage sent from the reading
+        if current_cell == cell:
+            cell_temp = res
+            self.CellTempResultBox.setPlainText(cell_temp)
 
         # TODO: update the StateOfChargeResult according to the cell selected
+        if current_cell == cell:
+            soc = res
+            self.StateOfChargeResult.setPlainText(soc)
         # TODO: update the StateOfHealthResult according to the cell selected
+        if current_cell == cell:
+            soh = res
+            self.StateOfHealthResult.setPlainText(soh)
         # TODO: update the StateOfPowerResult according to the cell selected
+        if current_cell == cell:
+            sop = res
+            self.StateOfPowerResult.setPlainText(sop)
 
         # TODO: update the ContactorStateBlockStatusOutput according to the cell selected
         # TODO: update the ManualAutomaticStateBlockStatusOutput according to the cell selected
