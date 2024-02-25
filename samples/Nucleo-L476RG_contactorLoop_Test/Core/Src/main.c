@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
@@ -26,6 +27,62 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
+// Debug (1) or Active (0) Mode
+#define DEBUG					1
+
+// Define Contactor GPIO and GPIO PINs
+#define POS_LSD_OUTPUT_GPIO		GPIOB
+#define POS_LSD_OUTPUT_PIN		GPIO_PIN_0
+#define POS_LSD_INPUT_GPIO		GPIOC
+#define POS_LSD_INPUT_PIN		GPIO_PIN_1
+
+#define POS_HSD_OUTPUT_GPIO		GPIOC
+#define POS_HSD_OUTPUT_PIN		GPIO_PIN_3
+#define POS_HSD_INPUT_GPIO		GPIOC
+#define POS_HSD_INPUT_PIN		GPIO_PIN_2
+
+#define POS_CON_INPUT_GPIO		GPIOC
+#define POS_CON_INPUT_PIN		GPIO_PIN_0
+
+#define ANALOG_INPUT_GPIO		GPIOA
+#define ANALOG_INPUT_PIN		GPIO_PIN_0
+
+#define NEG_LSD_OUTPUT_GPIO		GPIOC
+#define NEG_LSD_OUTPUT_PIN		GPIO_PIN_12
+#define NEG_LSD_INPUT_GPIO		GPIOC
+#define NEG_LSD_INPUT_PIN		GPIO_PIN_10
+
+#define NEG_HSD_OUTPUT_GPIO		GPIOB
+#define NEG_HSD_OUTPUT_PIN		GPIO_PIN_8
+#define NEG_HSD_INPUT_GPIO		GPIOB
+#define NEG_HSD_INPUT_PIN		GPIO_PIN_9
+
+#define NEG_CON_INPUT_GPIO		GPIOA
+#define NEG_CON_INPUT_PIN		GPIO_PIN_15
+
+#define PRE_LSD_OUTPUT_GPIO		GPIOC
+#define PRE_LSD_OUTPUT_PIN		GPIO_PIN_11
+#define PRE_LSD_INPUT_GPIO		GPIOD
+#define PRE_LSD_INPUT_PIN		GPIO_PIN_2
+
+#define PRE_HSD_OUTPUT_GPIO		GPIOB
+#define PRE_HSD_OUTPUT_PIN		GPIO_PIN_5
+#define PRE_HSD_INPUT_GPIO		GPIOB
+#define PRE_HSD_INPUT_PIN		GPIO_PIN_4
+
+#define PRE_CON_INPUT_GPIO		GPIOC
+#define PRE_CON_INPUT_PIN		GPIO_PIN_9
+
+// Define Constants (Fault Conditions, Limits & Other Conditions)
+#define SERIES_MOD				1	 // # of Modules in Series
+#define SERIES_CELL				12   // # of Cells in Series
+#define MAX_VOLT				4.20 // Maximum Voltage from a Cell
+#define MIN_VOLT				2.85 // Minimum Voltage from a Cell
+#define MIN_TEMP 				0    // Minimum (surface) Temperature of a cell
+#define MAX_TEMP 				60   // Maximum (surface) Temperature of a cell
+
+const int8_t PRE_CHG_PACK_VOLT = 3; //SERIES_MOD * SERIES_CELL * MAX_VOLT;
+const float known_resistance = 220.0;   // resistance in Ohms for current calculation
 
 // Define the Cell
 typedef struct {
@@ -140,6 +197,9 @@ void clearCellFault(Cell* cell, CellFault fault) {
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+ADC_HandleTypeDef hadc1;
+DMA_HandleTypeDef hdma_adc1;
+
 CAN_HandleTypeDef hcan1;
 
 UART_HandleTypeDef huart2;
@@ -151,8 +211,10 @@ UART_HandleTypeDef huart2;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_DMA_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_CAN1_Init(void);
+static void MX_ADC1_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -167,6 +229,209 @@ uint8_t TxData[8];
 uint8_t RxData[8];
 
 uint32_t TxMailbox;
+
+uint16_t cell_analog_values[3];
+char msg[30];  // message box for analog values
+
+float pre_charge_voltage; 	 // Measurement for startupSequence
+float cell_voltage; 	  	 // Measurement for checkVIT
+float cell_current; 	  	 // Calculated current from checkVIT
+float thermistor_resistance; // Calculated unknown resistance from checkVIT
+float cell_vref; 			 // measurement voltage for vref
+
+int startupSequence(void){
+
+	//
+	// Negative Contactor Enable
+	//
+
+	// Send high Signal to NEG_LSD_OUTPUT
+	HAL_GPIO_WritePin(NEG_LSD_OUTPUT_GPIO, NEG_LSD_OUTPUT_PIN, 1);
+
+	// Read NEG_LSD_INPUT
+		// If high, proceed, else EPO/return -1
+		if (!HAL_GPIO_ReadPin(NEG_LSD_INPUT_GPIO, NEG_LSD_INPUT_PIN)){ return -1; }
+
+
+	// Send high Signal to NEG_HSD_OUTPUT
+	HAL_GPIO_WritePin(NEG_HSD_OUTPUT_GPIO, NEG_HSD_OUTPUT_PIN, 1);
+
+	// Read NEG_HSD_INPUT
+		// If high, proceed, else EPO/return -1
+		if (!HAL_GPIO_ReadPin(NEG_LSD_INPUT_GPIO, NEG_LSD_INPUT_PIN)){ return -1; }
+
+	// Read NEG_CON_OUTPUT
+		// If connected (low for nand, high for and, between HSD and LSD), proceed, else EPO/return -1
+		if (HAL_GPIO_ReadPin(NEG_CON_INPUT_GPIO, NEG_CON_INPUT_PIN)){ return -1; }
+
+	//
+	// Pre Charge Contactor Enable
+	//
+
+	// Send high Signal to PRE_LSD_OUTPUT
+	HAL_GPIO_WritePin(PRE_LSD_OUTPUT_GPIO, PRE_LSD_OUTPUT_PIN, 1);
+
+	// Read PRE_LSD_INPUT
+		// If high, proceed, else EPO/return -1
+		if (!HAL_GPIO_ReadPin(PRE_LSD_INPUT_GPIO, PRE_LSD_INPUT_PIN)){ return -1; }
+
+	// Send high Signal to PRE_HSD_OUTPUT
+	HAL_GPIO_WritePin(PRE_HSD_OUTPUT_GPIO, PRE_HSD_OUTPUT_PIN, 1);
+
+	// Read PRE_HSD_INPUT
+		// If high, proceed, else EPO/return -1
+		if (!HAL_GPIO_ReadPin(PRE_HSD_INPUT_GPIO, PRE_HSD_INPUT_PIN)){ return -1; }
+
+	// Read PRE_CON_OUTPUT
+		// If connected (low for nand, high for and, between HSD and LSD), proceed, else EPO/return 0
+		if (HAL_GPIO_ReadPin(PRE_CON_INPUT_GPIO, PRE_CON_INPUT_PIN)){ return -1; }
+
+	// Read voltage at ANALOG_INPUT
+		// If 90% of pack voltage after time t proceed, else EPO/return -1
+		while (pre_charge_voltage < PRE_CHG_PACK_VOLT) {
+		    HAL_ADC_Start_DMA(&hadc1,(uint32_t *) cell_analog_values, 3); // Start Analog to Digital conversion
+		    HAL_ADC_PollForConversion(&hadc1, 1000);					 // Poll Value Read
+		    pre_charge_voltage = (float)cell_analog_values[0]/1000;   // Store Value in (mV) form (V)
+
+		    // Convert the integer part to a hexadecimal string
+		    uint16_t intPart = (uint16_t)pre_charge_voltage;
+		    char IntPartStr[3];
+		    sprintf(IntPartStr, "%02X", intPart);
+
+		    // Convert the fractional part to a hexadecimal string
+		    uint16_t fracPart = (uint16_t)((pre_charge_voltage - intPart) * 100);
+		    char FracPartStr[3];
+		    sprintf(FracPartStr, "%02X", fracPart);
+
+		    // Write to UART Over Temp Fault in the desired format
+		    char ResultStr[8];
+		    sprintf(ResultStr, "%s.%s\r\n", IntPartStr, FracPartStr);
+		    HAL_UART_Transmit(&huart2, (uint8_t*)ResultStr, sizeof(ResultStr), 100);
+
+
+		    // Delay for debug
+		    HAL_Delay(1000);
+		}
+
+	//
+	// Positive Contactor Enable
+	//
+
+	// Send high Signal to POS_LSD_OUTPUT
+	HAL_GPIO_WritePin(POS_LSD_OUTPUT_GPIO, POS_LSD_OUTPUT_PIN, 1);
+
+	// Read POS_LSD_INPUT
+		// If high, proceed, else EPO/return -1
+		if (!HAL_GPIO_ReadPin(POS_LSD_INPUT_GPIO, POS_LSD_INPUT_PIN)){ return -1; }
+
+	// Send high Signal to POS_HSD_OUTPUT
+	HAL_GPIO_WritePin(POS_HSD_OUTPUT_GPIO, POS_HSD_OUTPUT_PIN, 1);
+
+	// Read POS_HSD_INPUT
+		// If high, proceed, else EPO/return -1
+		if (!HAL_GPIO_ReadPin(POS_HSD_INPUT_GPIO, POS_HSD_INPUT_PIN)){ return -1; }
+
+	// Read POS_CON_OUTPUT
+		// If connected (low for nand, high for and, between HSD and LSD), proceed, else EPO/return 0
+		if (HAL_GPIO_ReadPin(POS_CON_INPUT_GPIO, POS_CON_INPUT_PIN)){ return -1; }
+
+	//
+	// Pre Charge Contactor Disable
+	//
+
+	// Send low Signal to PRE_HSD_OUTPUT
+	HAL_GPIO_WritePin(PRE_HSD_OUTPUT_GPIO, PRE_HSD_OUTPUT_PIN, 0);
+
+	// Read PRE_HSD_INPUT
+		// If low, proceed, else EPO/return -1
+		if (HAL_GPIO_ReadPin(PRE_HSD_INPUT_GPIO, PRE_HSD_INPUT_PIN)){ return -1; }
+
+	// Send low Signal to PRE_LSD_OUTPUT
+	HAL_GPIO_WritePin(PRE_LSD_OUTPUT_GPIO, PRE_LSD_OUTPUT_PIN, 0);
+
+	// Read PRE_LSD_INPUT
+		// If low, proceed, else EPO/return -1
+		if (HAL_GPIO_ReadPin(PRE_LSD_INPUT_GPIO, PRE_LSD_INPUT_PIN)){ return -1; }
+
+	// Read PRE_CON_OUTPUT
+		// If connected (low for nand, high for and, between HSD and LSD), proceed, else EPO/return 0
+		if (!HAL_GPIO_ReadPin(PRE_CON_INPUT_GPIO, PRE_CON_INPUT_PIN)){ return -1; }
+
+	// Start-up Sequence Concluded Successfully
+	return 0;
+}
+
+void checkVIT(uint8_t mod_number, uint8_t cell_number){
+
+	// append id, mod and cell number to sensor reading
+    HAL_ADC_Start_DMA(&hadc1,(uint32_t *) cell_analog_values, 3); // Start Analog to Digital conversion
+	HAL_ADC_PollForConversion(&hadc1, 1000);					 // Poll Value Read
+	cell_voltage = (float)cell_analog_values[1]/1000;   // Store Value in (mV) form (V)
+	cell_vref = (float)cell_analog_values[2]/1000;
+
+	// calculate I = cell_voltage / known R
+	cell_current = cell_voltage / known_resistance;
+
+	// calculate thermistor R = (Vref - V) /I
+	thermistor_resistance = (cell_vref - cell_voltage) / cell_current;
+
+	// Convert module number to hex
+	uint16_t mod_num = (uint16_t)mod_number;
+	char mod_numStr[2];
+	sprintf(mod_numStr, "%1X", mod_num);
+
+	// Convert cell number to hex
+	uint16_t cell_num = (uint16_t)cell_number;
+	char cell_numStr[2];
+	sprintf(cell_numStr, "%1X", cell_num);
+
+	// Convert the integer part to a hexadecimal string
+	uint16_t intPart = (uint16_t)cell_voltage;
+	char IntPartStr[3];
+	sprintf(IntPartStr, "%02X", intPart);
+
+	// Convert the fractional part to a hexadecimal string
+	uint16_t fracPart = (uint16_t)((cell_voltage - intPart) * 100);
+	char FracPartStr[3];
+	sprintf(FracPartStr, "%02X", fracPart);
+
+	// Write to UART
+	char ResultStr[11];
+	sprintf(ResultStr, "1%s%s%s.%s\r\n", mod_numStr, cell_numStr, IntPartStr, FracPartStr);
+	HAL_UART_Transmit(&huart2, (uint8_t*)ResultStr, sizeof(ResultStr), 100);
+
+	// Convert the integer part to a hexadecimal string
+	intPart = (uint16_t)cell_current;
+	sprintf(IntPartStr, "%02X", intPart);
+
+	// Convert the fractional part to a hexadecimal string
+	fracPart = (uint16_t)((cell_current - intPart) * 100);
+	sprintf(FracPartStr, "%02X", fracPart);
+
+	// Write to UART
+	sprintf(ResultStr, "2%s%s%s.%s\r\n", mod_numStr, cell_numStr, IntPartStr, FracPartStr);
+	HAL_UART_Transmit(&huart2, (uint8_t*)ResultStr, sizeof(ResultStr), 100);
+
+	// TODO: determine temp based off linear eq of degrees vs ohms
+	// Convert the integer part to a hexadecimal string
+	intPart = (uint16_t)thermistor_resistance;
+	sprintf(IntPartStr, "%02X", intPart);
+
+	// Convert the fractional part to a hexadecimal string
+	fracPart = (uint16_t)((thermistor_resistance - intPart) * 100);
+	sprintf(FracPartStr, "%02X", fracPart);
+
+	// Write to UART
+	sprintf(ResultStr, "3%s%s%s.%s\r\n", mod_numStr, cell_numStr, IntPartStr, FracPartStr);
+	HAL_UART_Transmit(&huart2, (uint8_t*)ResultStr, sizeof(ResultStr), 100);
+
+	// Delay for debug
+	HAL_Delay(1000);
+
+	// TODO: send V and I to the model to get SOH, SOC and SOP
+
+	return 0;
+}
 
 /* USER CODE END 0 */
 
@@ -221,8 +486,10 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_USART2_UART_Init();
   MX_CAN1_Init();
+  MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
 
   HAL_CAN_Start(&hcan1);
@@ -243,6 +510,11 @@ int main(void)
   HAL_Delay(1000);
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, 0);
 
+  int success;
+  success = startupSequence();
+
+  if (success == -1) { HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, 1); }
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -251,8 +523,10 @@ int main(void)
   {
     /* USER CODE END WHILE */
 
+    /* USER CODE BEGIN 3 */
 
-	/* USER CODE BEGIN 3 */
+	  // TODO: loop through every cell in the pack for every module
+	  checkVIT(cell0.module, cell0.cell);
 
 	  if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_9) && !HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_8)){
 		  // Turn ON LED
@@ -411,6 +685,91 @@ void SystemClock_Config(void)
 }
 
 /**
+  * @brief ADC1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_ADC1_Init(void)
+{
+
+  /* USER CODE BEGIN ADC1_Init 0 */
+
+  /* USER CODE END ADC1_Init 0 */
+
+  ADC_MultiModeTypeDef multimode = {0};
+  ADC_ChannelConfTypeDef sConfig = {0};
+
+  /* USER CODE BEGIN ADC1_Init 1 */
+
+  /* USER CODE END ADC1_Init 1 */
+
+  /** Common config
+  */
+  hadc1.Instance = ADC1;
+  hadc1.Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV1;
+  hadc1.Init.Resolution = ADC_RESOLUTION_12B;
+  hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+  hadc1.Init.ScanConvMode = ADC_SCAN_ENABLE;
+  hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
+  hadc1.Init.LowPowerAutoWait = DISABLE;
+  hadc1.Init.ContinuousConvMode = DISABLE;
+  hadc1.Init.NbrOfConversion = 3;
+  hadc1.Init.DiscontinuousConvMode = DISABLE;
+  hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
+  hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
+  hadc1.Init.DMAContinuousRequests = DISABLE;
+  hadc1.Init.Overrun = ADC_OVR_DATA_PRESERVED;
+  hadc1.Init.OversamplingMode = DISABLE;
+  if (HAL_ADC_Init(&hadc1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure the ADC multi-mode
+  */
+  multimode.Mode = ADC_MODE_INDEPENDENT;
+  if (HAL_ADCEx_MultiModeConfigChannel(&hadc1, &multimode) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure Regular Channel
+  */
+  sConfig.Channel = ADC_CHANNEL_5;
+  sConfig.Rank = ADC_REGULAR_RANK_1;
+  sConfig.SamplingTime = ADC_SAMPLETIME_2CYCLES_5;
+  sConfig.SingleDiff = ADC_SINGLE_ENDED;
+  sConfig.OffsetNumber = ADC_OFFSET_NONE;
+  sConfig.Offset = 0;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure Regular Channel
+  */
+  sConfig.Channel = ADC_CHANNEL_6;
+  sConfig.Rank = ADC_REGULAR_RANK_2;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure Regular Channel
+  */
+  sConfig.Channel = ADC_CHANNEL_9;
+  sConfig.Rank = ADC_REGULAR_RANK_3;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN ADC1_Init 2 */
+
+  /* USER CODE END ADC1_Init 2 */
+
+}
+
+/**
   * @brief CAN1 Initialization Function
   * @param None
   * @retval None
@@ -498,6 +857,22 @@ static void MX_USART2_UART_Init(void)
 }
 
 /**
+  * Enable DMA controller clock
+  */
+static void MX_DMA_Init(void)
+{
+
+  /* DMA controller clock enable */
+  __HAL_RCC_DMA1_CLK_ENABLE();
+
+  /* DMA interrupt init */
+  /* DMA1_Channel1_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel1_IRQn);
+
+}
+
+/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -513,15 +888,37 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
+  __HAL_RCC_GPIOD_CLK_ENABLE();
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3|GPIO_PIN_11|GPIO_PIN_12, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOA, LD2_Pin|GPIO_PIN_6|GPIO_PIN_7, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0|GPIO_PIN_5|GPIO_PIN_8, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : B1_Pin */
   GPIO_InitStruct.Pin = B1_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PC0 PC1 PC2 PC9
+                           PC10 */
+  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_9
+                          |GPIO_PIN_10;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PC3 PC11 PC12 */
+  GPIO_InitStruct.Pin = GPIO_PIN_3|GPIO_PIN_11|GPIO_PIN_12;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pins : LD2_Pin PA6 PA7 */
   GPIO_InitStruct.Pin = LD2_Pin|GPIO_PIN_6|GPIO_PIN_7;
@@ -530,11 +927,30 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PA8 PA9 */
-  GPIO_InitStruct.Pin = GPIO_PIN_8|GPIO_PIN_9;
+  /*Configure GPIO pins : PB0 PB5 PB8 */
+  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_5|GPIO_PIN_8;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PA8 PA9 PA15 */
+  GPIO_InitStruct.Pin = GPIO_PIN_8|GPIO_PIN_9|GPIO_PIN_15;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PD2 */
+  GPIO_InitStruct.Pin = GPIO_PIN_2;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PB4 PB9 */
+  GPIO_InitStruct.Pin = GPIO_PIN_4|GPIO_PIN_9;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
