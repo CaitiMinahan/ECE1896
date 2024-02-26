@@ -74,15 +74,17 @@
 #define PRE_CON_INPUT_PIN		GPIO_PIN_9
 
 // Define Constants (Fault Conditions, Limits & Other Conditions)
-#define SERIES_MOD				1	 // # of Modules in Series
-#define SERIES_CELL				12   // # of Cells in Series
-#define MAX_VOLT				4.20 // Maximum Voltage from a Cell
-#define MIN_VOLT				2.85 // Minimum Voltage from a Cell
-#define MIN_TEMP 				0    // Minimum (surface) Temperature of a cell
-#define MAX_TEMP 				60   // Maximum (surface) Temperature of a cell
+#define SERIES_MOD				1	  // # of Modules in Series
+#define SERIES_CELL				12    // # of Cells in Series
+#define MAX_VOLT				4.20  // Maximum Voltage from a Cell
+#define MIN_VOLT				2.85  // Minimum Voltage from a Cell
+#define MIN_TEMP 				0     // Minimum (surface) Temperature of a cell
+#define MAX_TEMP 				60    // Maximum (surface) Temperature of a cell
+#define TSREF_ADC				5	  // Reference voltage for thermistor
+#define TS_R1					10000 // Reference series resistance for themistor
 
 const int8_t PRE_CHG_PACK_VOLT = 3; //SERIES_MOD * SERIES_CELL * MAX_VOLT;
-const float known_resistance = 220.0;   // resistance in Ohms for current calculation
+const float known_resistance = 220.0; //10000.0;  // series resistance in Ohms for thermistor
 
 // Define the Cell
 typedef struct {

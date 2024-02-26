@@ -1337,6 +1337,8 @@ void checkVIT(uint8_t mod_number, uint8_t cell_number){
  8000c9c:	f44f 707a 	mov.w	r0, #1000	; 0x3e8
  8000ca0:	f000 feba 	bl	8001a18 <HAL_Delay>
 
+	// TODO: send V and I to the model to get SOH, SOC and SOP
+
 	return 0;
  8000ca4:	bf00      	nop
 }
