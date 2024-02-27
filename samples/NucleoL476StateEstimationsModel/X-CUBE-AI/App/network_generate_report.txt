@@ -1,0 +1,125 @@
+Neural Network Tools for STM32 family v1.7.0 (stm.ai v8.1.0-19520)
+Created date          : 2024-02-26 21:44:59
+Parameters            : generate --name network -m C:/Users/LucasTroy/Downloads/model_file_name.h5 --type keras --compression none --verbosity 1 --workspace C:\Users\LUCAST~1\AppData\Local\Temp\mxAI_workspace52633468508590015795717778159477949 --output C:\Users\LucasTroy\.stm32cubemx\network_output --allocate-inputs --series stm32l4 --allocate-outputs
+
+Exec/report summary (generate)
+----------------------------------------------------------------------------------------------------------------
+model file         :   C:\Users\LucasTroy\Downloads\model_file_name.h5                                          
+type               :   keras                                                                                    
+c_name             :   network                                                                                  
+compression        :   none                                                                                     
+options            :   allocate-inputs, allocate-outputs                                                        
+optimization       :   balanced                                                                                 
+target/series      :   stm32l4                                                                                  
+workspace dir      :   C:\Users\LUCAST~1\AppData\Local\Temp\mxAI_workspace52633468508590015795717778159477949   
+output dir         :   C:\Users\LucasTroy\.stm32cubemx\network_output                                           
+model_fmt          :   float                                                                                    
+model_name         :   model_file_name                                                                          
+model_hash         :   2434075f777317b31c2d24887dfe2da4                                                         
+params #           :   10,702 items (41.80 KiB)                                                                 
+----------------------------------------------------------------------------------------------------------------
+input 1/1          :   'input_0' (domain:activations/**default**)                                               
+                   :   2 items, 8 B, ai_float, float, (1,1,2)                                                   
+output 1/1         :   'dense_dense' (domain:activations/**default**)                                           
+                   :   2 items, 8 B, ai_float, float, (1,2)                                                     
+macc               :   10,752                                                                                   
+weights (ro)       :   43,408 B (42.39 KiB) (1 segment) / +600(+1.4%) vs float model                            
+activations (rw)   :   1,608 B (1.57 KiB) (1 segment) *                                                         
+ram (total)        :   1,608 B (1.57 KiB) = 1,608 + 0 + 0                                                       
+----------------------------------------------------------------------------------------------------------------
+(*) 'input'/'output' buffers can be used from the activations buffer
+
+Model name - model_file_name ['input_0'] ['dense_dense']
+------ ---------------------------- ---------------------- --------------- -------- -------------- --- ------------------ ------------------ ------------------ 
+m_id   layer (type,original)        oshape                 param/size          macc   connected to   | c_size             c_macc             c_type             
+------ ---------------------------- ---------------------- --------------- -------- -------------- --- ------------------ ------------------ ------------------ 
+0      input_0 (Input, None)        [b:None,h:1,h:1,c:2]                                             | +43,000(+100.0%)   +10,650(+100.0%)   lstm_of32[0]       
+       lstm (LSTM, LSTM)            [b:None,c:50]          10,600/42,400     10,650        input_0   | -42,400(-100.0%)   -10,650(-100.0%)   
+------ ---------------------------- ---------------------- --------------- -------- -------------- --- ------------------ ------------------ ------------------ 
+1      dense_dense (Dense, Dense)   [b:None,c:2]           102/408              102           lstm   |                                       dense_of32[o][1]   
+------ ---------------------------- ---------------------- --------------- -------- -------------- --- ------------------ ------------------ ------------------ 
+model/c-model: macc=10,752/10,752  weights=42,808/43,408 +600(+1.4%) activations=--/1,608 io=--/0
+
+
+
+Generated C-graph summary
+------------------------------------------------------------------------------------------------------------------------
+model name            : model_file_name
+c-name                : network
+c-node #              : 2
+c-array #             : 10
+activations size      : 1608 (1 segment)
+weights size          : 43408 (1 segment)
+macc                  : 10752
+inputs                : ['input_0_output']
+outputs               : ['dense_dense_output']
+
+C-Arrays (10)
+------ --------------------- ------------- ------------------------- ------------- --------- --------- 
+c_id   name (*_array)        item/size     domain/mem-pool           c-type        fmt       comment   
+------ --------------------- ------------- ------------------------- ------------- --------- --------- 
+0      lstm_scratch0         350/1400      activations/**default**   float         float32             
+1      input_0_output        2/8           activations/**default**   float         float32   /input    
+2      lstm_output0          50/200        activations/**default**   float         float32             
+3      dense_dense_output    2/8           activations/**default**   float         float32   /output   
+4      lstm_kernel           400/1600      weights/weights           const float   float32             
+5      lstm_recurrent        10000/40000   weights/weights           const float   float32             
+6      lstm_peephole         150/600       weights/weights           const float   float32             
+7      lstm_bias             200/800       weights/weights           const float   float32             
+8      dense_dense_weights   100/400       weights/weights           const float   float32             
+9      dense_dense_bias      2/8           weights/weights           const float   float32             
+------ --------------------- ------------- ------------------------- ------------- --------- --------- 
+
+C-Layers (2)
+------ ---------------- ---- ------------ ------- ------- ------------------------ ------------------ 
+c_id   name (*_layer)   id   layer_type   macc    rom     tensors                  shape (array id)   
+------ ---------------- ---- ------------ ------- ------- ------------------------ ------------------ 
+0      lstm             0    lstm         10650   43000   I: input_0_output        (1,1,2) (1)        
+                                                          S: lstm_scratch0                            
+                                                          W: lstm_kernel           (2,200) (4)        
+                                                          W: lstm_recurrent        (50,200) (5)       
+                                                          W: lstm_peephole         (1,1,1,150) (6)    
+                                                          W: lstm_bias             (200,) (7)         
+                                                          O: lstm_output0          (1,50) (2)         
+------ ---------------- ---- ------------ ------- ------- ------------------------ ------------------ 
+1      dense_dense      1    dense        102     408     I: lstm_output0          (1,50) (2)         
+                                                          W: dense_dense_weights   (50,2) (8)         
+                                                          W: dense_dense_bias      (2,) (9)           
+                                                          O: dense_dense_output    (1,2) (3)          
+------ ---------------- ---- ------------ ------- ------- ------------------------ ------------------ 
+
+
+
+Number of operations per c-layer
+------- ------ --------------------- -------- -------------- -------- ---------- 
+c_id    m_id   name (type)                #op           type   #param   sparsity 
+------- ------ --------------------- -------- -------------- -------- ---------- 
+0       0      lstm (lstm)             10,650   smul_f32_f32   10,750     0.0187 
+1       1      dense_dense (dense)        102   smul_f32_f32      102     0.0000 
+------- ------ --------------------- -------- -------------- -------- ---------- 
+total                                  10,752                  10,852     0.0185 
+
+Number of operation types
+---------------- -------- ----------- 
+operation type          #           % 
+---------------- -------- ----------- 
+smul_f32_f32       10,752      100.0% 
+
+Complexity report (model)
+------ ------------- ------------------------- ------------------------- ------ 
+m_id   name          c_macc                    c_rom                     c_id   
+------ ------------- ------------------------- ------------------------- ------ 
+0      input_0       ||||||||||||||||  99.1%   ||||||||||||||||  99.1%   [0]    
+1      dense_dense   |                  0.9%   |                  0.9%   [1]    
+------ ------------- ------------------------- ------------------------- ------ 
+macc=10,752 weights=43,408 act=1,608 ram_io=0
+
+Generated files (7)
+---------------------------------------------------------------------- 
+C:\Users\LucasTroy\.stm32cubemx\network_output\network_config.h        
+C:\Users\LucasTroy\.stm32cubemx\network_output\network.h               
+C:\Users\LucasTroy\.stm32cubemx\network_output\network.c               
+C:\Users\LucasTroy\.stm32cubemx\network_output\network_data_params.h   
+C:\Users\LucasTroy\.stm32cubemx\network_output\network_data_params.c   
+C:\Users\LucasTroy\.stm32cubemx\network_output\network_data.h          
+C:\Users\LucasTroy\.stm32cubemx\network_output\network_data.c          
