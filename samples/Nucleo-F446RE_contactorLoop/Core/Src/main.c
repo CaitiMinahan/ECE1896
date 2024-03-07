@@ -360,7 +360,7 @@ int startupSequence(void){
 	return 0;
 }
 
-void checkVITF(Cell* cell){
+void checkStatusTransmit(Cell* cell){
 
 	// append id, mod and cell number to sensor reading
     HAL_ADC_Start_DMA(&hadc1,(uint32_t *) cell_analog_values, 3); // Start Analog to Digital conversion
@@ -531,7 +531,7 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 	  // TODO: loop through every cell in the pack for every module
-	  checkVITF(&cell0);
+	  checkStatusTransmit(&cell0);
 
 	  if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_9) && !HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_8)){
 		  // Turn ON LED
