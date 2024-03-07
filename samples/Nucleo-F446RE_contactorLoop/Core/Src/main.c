@@ -237,6 +237,8 @@ float cell_voltage; 	  	 // Measurement for checkVIT
 float cell_current; 	  	 // Calculated current from checkVIT
 float thermistor_resistance; // Calculated unknown resistance from checkVIT
 float cell_vref; 			 // measurement voltage for vref
+float soc; 					 // State of Charge
+float sop; 					 // State of Power
 
 int startupSequence(void){
 
@@ -437,10 +439,37 @@ void checkStatusTransmit(Cell* cell){
 	sprintf(ResultStr, "3%s%s%s.%s\r\n", mod_numStr, cell_numStr, IntPartStr, FracPartStr);
 	HAL_UART_Transmit(&huart2, (uint8_t*)ResultStr, sizeof(ResultStr), 100);
 
+	// TODO: send V and I to the model to get (5) SOC and (6) SOP
+	// TODO: Transfer inference functions here to get SOC
+
+	// Convert the integer part to a hexadecimal string
+	intPart = (uint16_t)soc;
+	sprintf(IntPartStr, "%02X", intPart);
+
+	// Convert the fractional part to a hexadecimal string
+	fracPart = (uint16_t)((soc - intPart) * 100);
+	sprintf(FracPartStr, "%02X", fracPart);
+
+	// Write to UART
+	sprintf(ResultStr, "5%s%s%s.%s\r\n", mod_numStr, cell_numStr, IntPartStr, FracPartStr);
+	HAL_UART_Transmit(&huart2, (uint8_t*)ResultStr, sizeof(ResultStr), 100);
+
+	// TODO: Figure out how to calculate SOP
+
+	// Convert the integer part to a hexadecimal string
+	intPart = (uint16_t)sop;
+	sprintf(IntPartStr, "%02X", intPart);
+
+	// Convert the fractional part to a hexadecimal string
+	fracPart = (uint16_t)((sop - intPart) * 100);
+	sprintf(FracPartStr, "%02X", fracPart);
+
+	// Write to UART
+	sprintf(ResultStr, "5%s%s%s.%s\r\n", mod_numStr, cell_numStr, IntPartStr, FracPartStr);
+	HAL_UART_Transmit(&huart2, (uint8_t*)ResultStr, sizeof(ResultStr), 100);
+
 	// Delay for debug
 	HAL_Delay(1000);
-
-	// TODO: send V and I to the model to get SOH, SOC and SOP
 
 	return 0;
 }
