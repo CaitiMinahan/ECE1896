@@ -60,8 +60,8 @@ all: main-build
 main-build: Nucleo-L476RG_CAN_Tx.elf secondary-outputs
 
 # Tool invocations
-Nucleo-L476RG_CAN_Tx.elf Nucleo-L476RG_CAN_Tx.map: $(OBJS) $(USER_OBJS) C:\Users\14845\Documents\ECE1896\samples\Nucleo-L476RG_CAN_Tx\STM32L476RGTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "Nucleo-L476RG_CAN_Tx.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\14845\Documents\ECE1896\samples\Nucleo-L476RG_CAN_Tx\STM32L476RGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Nucleo-L476RG_CAN_Tx.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Nucleo-L476RG_CAN_Tx.elf Nucleo-L476RG_CAN_Tx.map: $(OBJS) $(USER_OBJS) C:\Users\LucasTroy\Documents\ECE1896\samples\Nucleo-L476RG_CAN_Tx\STM32L476RGTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "Nucleo-L476RG_CAN_Tx.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\LucasTroy\Documents\ECE1896\samples\Nucleo-L476RG_CAN_Tx\STM32L476RGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Nucleo-L476RG_CAN_Tx.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

@@ -465,7 +465,7 @@ void checkStatusTransmit(Cell* cell){
 	sprintf(FracPartStr, "%02X", fracPart);
 
 	// Write to UART
-	sprintf(ResultStr, "5%s%s%s.%s\r\n", mod_numStr, cell_numStr, IntPartStr, FracPartStr);
+	sprintf(ResultStr, "6%s%s%s.%s\r\n", mod_numStr, cell_numStr, IntPartStr, FracPartStr);
 	HAL_UART_Transmit(&huart2, (uint8_t*)ResultStr, sizeof(ResultStr), 100);
 
 	// Delay for debug
@@ -756,11 +756,11 @@ static void MX_CAN1_Init(void)
 
   /* USER CODE END CAN1_Init 1 */
   hcan1.Instance = CAN1;
-  hcan1.Init.Prescaler = 30;
+  hcan1.Init.Prescaler = 18;
   hcan1.Init.Mode = CAN_MODE_NORMAL;
   hcan1.Init.SyncJumpWidth = CAN_SJW_1TQ;
-  hcan1.Init.TimeSeg1 = CAN_BS1_1TQ;
-  hcan1.Init.TimeSeg2 = CAN_BS2_1TQ;
+  hcan1.Init.TimeSeg1 = CAN_BS1_2TQ;
+  hcan1.Init.TimeSeg2 = CAN_BS2_2TQ;
   hcan1.Init.TimeTriggeredMode = DISABLE;
   hcan1.Init.AutoBusOff = DISABLE;
   hcan1.Init.AutoWakeUp = DISABLE;
