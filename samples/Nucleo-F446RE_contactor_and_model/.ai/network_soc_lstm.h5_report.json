@@ -1,0 +1,269 @@
+{
+    "_allocate_inputs": 4,
+    "_allocate_outputs": 4,
+    "cli_parameters": "generate --name network -m C:/Users/LucasTroy/Downloads/soc_lstm.h5 --type keras --compression none --verbosity 1 --workspace C:\\Users\\LUCAST~1\\AppData\\Local\\Temp\\mxAI_workspace11170211822712002924551254453846136 --output C:\\Users\\LucasTroy\\.stm32cubemx\\network_output --allocate-inputs --series stm32f4 --allocate-outputs",
+    "cli_version": {
+        "major": 1,
+        "micro": 0,
+        "minor": 7
+    },
+    "cli_version_str": "1.7.0",
+    "code_size": 0,
+    "compression": {
+        "factor": null,
+        "layers": {}
+    },
+    "date_time": "Mon Mar 11 19:17:44 2024",
+    "error": 0,
+    "error_str": [],
+    "exec_cmd": "generate",
+    "exec_duration": 0.0,
+    "hash": "cfa2c155721d51e6b34add198471acbb",
+    "inputs": [
+        "input_0"
+    ],
+    "layers": [
+        {
+            "c_id": [
+                0
+            ],
+            "extras": {
+                "n_macc": 0,
+                "n_params": 0,
+                "psize": 0,
+                "rom_output": {
+                    "c_size": 8,
+                    "fmt": {
+                        "format": "float"
+                    },
+                    "shape": [
+                        1,
+                        2,
+                        1
+                    ]
+                },
+                "rom_size": 43000
+            },
+            "id": 0,
+            "inputs": [],
+            "name": "input_0",
+            "original": null,
+            "type": "Input"
+        },
+        {
+            "c_id": [],
+            "extras": {
+                "n_macc": 10650,
+                "n_params": 10600,
+                "psize": 42400,
+                "rom_size": 0
+            },
+            "id": 0,
+            "inputs": [
+                "input_0"
+            ],
+            "name": "lstm_20",
+            "original": "LSTM",
+            "type": "LSTM"
+        },
+        {
+            "c_id": [
+                1
+            ],
+            "extras": {
+                "n_macc": 20250,
+                "n_params": 20200,
+                "psize": 80800,
+                "rom_size": 81400
+            },
+            "id": 1,
+            "inputs": [
+                "lstm_20"
+            ],
+            "name": "lstm_21",
+            "original": "LSTM",
+            "type": "LSTM"
+        },
+        {
+            "c_id": [
+                2
+            ],
+            "extras": {
+                "n_macc": 20250,
+                "n_params": 20200,
+                "psize": 80800,
+                "rom_size": 81400
+            },
+            "id": 2,
+            "inputs": [
+                "lstm_21"
+            ],
+            "name": "lstm_22",
+            "original": "LSTM",
+            "type": "LSTM"
+        },
+        {
+            "c_id": [
+                3,
+                4
+            ],
+            "extras": {
+                "n_macc": 408,
+                "n_params": 408,
+                "psize": 1632,
+                "rom_output": {
+                    "c_size": 32,
+                    "fmt": {
+                        "format": "float"
+                    },
+                    "shape": [
+                        8,
+                        1
+                    ]
+                },
+                "rom_size": 1632
+            },
+            "id": 3,
+            "inputs": [
+                "lstm_22"
+            ],
+            "name": "dense_20_dense",
+            "original": "Dense",
+            "type": "Dense"
+        },
+        {
+            "c_id": [],
+            "extras": {
+                "n_macc": 8,
+                "n_params": 0,
+                "psize": 0,
+                "rom_output": {
+                    "c_size": 32,
+                    "fmt": {
+                        "format": "float"
+                    },
+                    "shape": [
+                        8,
+                        1
+                    ]
+                },
+                "rom_size": 0
+            },
+            "id": 3,
+            "inputs": [
+                "dense_20_dense"
+            ],
+            "name": "dense_20",
+            "original": "Dense",
+            "type": "Nonlinearity"
+        },
+        {
+            "c_id": [
+                5,
+                6
+            ],
+            "extras": {
+                "n_macc": 9,
+                "n_params": 9,
+                "psize": 36,
+                "rom_output": {
+                    "c_size": 4,
+                    "fmt": {
+                        "format": "float"
+                    },
+                    "shape": [
+                        1,
+                        1
+                    ]
+                },
+                "rom_size": 36
+            },
+            "id": 4,
+            "inputs": [
+                "dense_20"
+            ],
+            "name": "dense_21_dense",
+            "original": "Dense",
+            "type": "Dense"
+        },
+        {
+            "c_id": [],
+            "extras": {
+                "n_macc": 1,
+                "n_params": 0,
+                "psize": 0,
+                "rom_output": {
+                    "c_size": 4,
+                    "fmt": {
+                        "format": "float"
+                    },
+                    "shape": [
+                        1,
+                        1
+                    ]
+                },
+                "rom_size": 0
+            },
+            "id": 4,
+            "inputs": [
+                "dense_21_dense"
+            ],
+            "name": "dense_21",
+            "original": "Dense",
+            "type": "Nonlinearity"
+        }
+    ],
+    "model_files": [
+        "C:\\Users\\LucasTroy\\Downloads\\soc_lstm.h5"
+    ],
+    "model_n_params": 51417,
+    "model_name": "soc_lstm",
+    "model_size": 205668,
+    "model_type": "keras",
+    "name": "network",
+    "outputs": [
+        "dense_21"
+    ],
+    "ram_io_size": [
+        8,
+        4
+    ],
+    "ram_size": [
+        1800,
+        1800
+    ],
+    "report_version": 1.1,
+    "rom_cfact": 1.0,
+    "rom_heap_inspector": 2048,
+    "rom_inputs": [
+        {
+            "c_size": 8,
+            "c_type": "float",
+            "name": "input_0"
+        }
+    ],
+    "rom_n_macc": 51576,
+    "rom_outputs": [
+        {
+            "c_size": 4,
+            "c_type": "float",
+            "name": "dense_21"
+        }
+    ],
+    "rom_size": 206268,
+    "strategy": "heap_overlay",
+    "tools_api_version": {
+        "major": 1,
+        "micro": 0,
+        "minor": 7
+    },
+    "tools_version": {
+        "extra": "19520",
+        "major": 8,
+        "micro": 0,
+        "minor": 1
+    },
+    "val_error": -1.0,
+    "val_error_desc": "None (None) #-1",
+    "val_metrics": []
+}
