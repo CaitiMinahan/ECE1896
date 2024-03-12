@@ -18,6 +18,6 @@ def parser(data: str):
         # convert res to binary
         res = format(int(res, 16), '08b')  # returns binary value as a string
     # else:
-    #TODO: result needs to be converted to a decimal
+    #TODO: result needs to be converted to a decimal because the res is being sent as a decimal right now
 
     return int(p_id), int(mod), int(cell), res
