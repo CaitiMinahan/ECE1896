@@ -846,8 +846,8 @@ class Ui_BMS_Dashboard(QMainWindow):
         # call the parser to receive module, cell and res of the input string passed over serial from the STM32
         p_id, mod, cell, res = parser(data)
 
-        # TODO: test for other packet IDs and update boxes accordingly
-        # TODO: need to check the cell and module number and store res based off the specific cell and module
+        print(res)
+
         values = {}  # empty dictionary to store sensor readings according to the module and cell numbers
 
         # Check if the mod key exists in the cell_values dictionary
@@ -858,7 +858,6 @@ class Ui_BMS_Dashboard(QMainWindow):
         # Store the res value for the given cell and mod
         values[mod][cell] = res
 
-        # TODO: Test all of the packet ids
         # cases = {
         #         1: lambda: code for voltage reading,
         #         2: lambda: code for current reading ,
@@ -882,9 +881,9 @@ class Ui_BMS_Dashboard(QMainWindow):
             # make sure the cell selected displays the cell voltage sent from the reading
             if current_cell == str(cell):
                 cell_voltage = res
-                self.CellVoltageResultBox.setPlainText(cell_voltage)
+                self.CellVoltageResultBox.setPlainText(str(cell_voltage))
             else:
-                self.CellVoltageResultBox.setPlainText("")
+                self.CellVoltageResultBox.setPlainText("0")
 
             # UPDATES FOR THE PACK VIEW TAB
             # note: update cell voltage according to the cell selected
@@ -914,10 +913,10 @@ class Ui_BMS_Dashboard(QMainWindow):
             current_cell = self.CurrentCellNumberBox.toPlainText()
             # make sure the cell selected displays the cell voltage sent from the reading
             if current_cell == str(cell):
-                cell_voltage = res
-                self.CellCurrentResultBox.setPlainText(cell_voltage)
+                cell_current = res
+                self.CellCurrentResultBox.setPlainText(str(cell_current))
             else:
-                self.CellCurrentResultBox.setPlainText("")
+                self.CellCurrentResultBox.setPlainText("0")
 
             # UPDATES FOR THE PACK VIEW TAB
             # note: update cell current according to the cell selected
@@ -947,10 +946,10 @@ class Ui_BMS_Dashboard(QMainWindow):
             current_cell = self.CurrentCellNumberBox.toPlainText()
             # make sure the cell selected displays the cell voltage sent from the reading
             if current_cell == str(cell):
-                cell_voltage = res
-                self.CellTempResultBox.setPlainText(cell_voltage)
+                cell_temp = res
+                self.CellTempResultBox.setPlainText(str(cell_temp))
             else:
-                self.CellTempResultBox.setPlainText("")
+                self.CellTempResultBox.setPlainText("0")
 
             # UPDATES FOR THE PACK VIEW TAB
             # note: update cell temp according to the cell selected
@@ -982,8 +981,8 @@ class Ui_BMS_Dashboard(QMainWindow):
             current_cell = self.CurrentCellNumberBox.toPlainText()
             # make sure the cell selected displays the cell voltage sent from the reading
             if current_cell == str(cell):
-                cell_voltage = res
-                self.StateOfChargeResult.setPlainText(cell_voltage)
+                cell_soc = res
+                self.StateOfChargeResult.setPlainText(str(cell_soc))
             else:
                 self.StateOfChargeResult.setPlainText("0")
 
@@ -995,8 +994,8 @@ class Ui_BMS_Dashboard(QMainWindow):
             current_cell = self.CurrentCellNumberBox.toPlainText()
             # make sure the cell selected displays the cell voltage sent from the reading
             if current_cell == str(cell):
-                cell_voltage = res
-                self.StateOfPowerResult.setPlainText(cell_voltage)
+                cell_sop = res
+                self.StateOfPowerResult.setPlainText(str(cell_sop))
             else:
                 self.StateOfPowerResult.setPlainText("0")
 
