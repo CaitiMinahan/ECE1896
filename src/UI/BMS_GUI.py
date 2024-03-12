@@ -81,6 +81,7 @@ class Ui_BMS_Dashboard(QMainWindow):
             serial_reader.start()
         else:
             QApplication.quit()  # Close the program if no selection is made
+
         BMS_Dashboard.setObjectName("self")
         BMS_Dashboard.resize(455, 801)
         self.BMS_Diagnostics_Dashboard_Title = QtWidgets.QTextBrowser(BMS_Dashboard)
@@ -827,30 +828,29 @@ class Ui_BMS_Dashboard(QMainWindow):
 
     # update the GUI according to what is selected from the dropdowns
     def on_cell_dropdown_changed(self):
-        # Get the currently selected item from the combo box
+        # Update your page according to the selected item
         selected_item = self.cellDropDownMenu.currentText()
-        # Update your page according to the selected item
-        current_text = self.CurrentCellNumberBox.toPlainText()
-        self.CurrentCellNumberBox.setPlainText(current_text + selected_item)
+        self.CurrentCellNumberBox.setPlainText(selected_item)
+
     def on_module_dropdown_changed(self):
-        # Get the currently selected item from the combo box
+        # Update your page according to the selected item
         selected_item = self.moduleDropDownMenu.currentText()
-        # Update your page according to the selected item
-        current_text = self.CurrentModuleNumberBox.toPlainText()
-        self.CurrentModuleNumberBox.setPlainText(current_text + selected_item)
+        self.CurrentModuleNumberBox.setPlainText(selected_item)
     def on_slave_dropdown_changed(self):
-        # Get the currently selected item from the combo box
-        selected_item = self.slaveDropDownMenu.currentText()
         # Update your page according to the selected item
-        current_text = self.CurrentSlaveNumberBox.toPlainText()
-        self.CurrentSlaveNumberBox.setPlainText(current_text + selected_item)
+        selected_item = self.slaveDropDownMenu.currentText()
+        self.CurrentSlaveNumberBox.setPlainText(selected_item)
 
     # update the GUI with latest diagnostics read over serial (values read from STM32)
     def handle_data(self, data):
         _translate = QtCore.QCoreApplication.translate
 
+        # print(data)
+
         # call the parser to receive module, cell and res of the input string passed over serial from the STM32
-        mod, cell, res = parser(data)
+        p_id, mod, cell, res = parser(data)
+
+        print(p_id, mod, cell, res)
 
         # TODO: Test all of the packet ids
         # note: If the id is a fault add case statements for each bit in the result and set the error string correctly
@@ -865,86 +865,89 @@ class Ui_BMS_Dashboard(QMainWindow):
         #         7: lambda: code for faults,
         #     }
 
-        # faults:
-        # power rail fault - 00000001
-        # comm fault ------- 00000010
-        # overvoltage ------ 00000100
-        # undervoltage ----- 00001000
-        # overtemp --------- 00010000
-        # undertemp -------- 00100000
-        # overcurrent ------ 01000000
-        # undercurrent ----- 10000000
+        # test all packet IDs and update the GUI according to the specified ID value
+        if p_id == 7:
 
-        # Iterate over the bits in the fault string
-        # create a dictionary of fault tuples for setting the gui outputs per fault input
-        fault_mapping = {
-            7: (self.PowerRailFaultOutput, self.PowerRailStatusGOOD, self.PowerRailStatusBAD),
-            6: (self.CommFaultOutput, self.CommStatusGOOD, self.CommStatusBAD),
-            5: (self.VoltageFaultOutput, self.VoltageStatusGOOD, self.VoltageStatusBAD),
-            4: (self.VoltageFaultOutput, self.VoltageStatusGOOD, self.VoltageStatusBAD),
-            3: (self.TempFaultOutput, self.TempStatusGOOD_2, self.TempStatusBAD_2),
-            2: (self.TempFaultOutput, self.TempStatusGOOD_2, self.TempStatusBAD_2),
-            1: (self.CurrentFaultOutput, self.CurrentStatusGOOD, self.CurrentStatusBAD),
-            0: (self.CurrentFaultOutput, self.CurrentStatusGOOD, self.CurrentStatusBAD),
-        }
+            # faults:
+            # power rail fault - 00000001
+            # comm fault ------- 00000010
+            # overvoltage ------ 00000100
+            # undervoltage ----- 00001000
+            # overtemp --------- 00010000
+            # undertemp -------- 00100000
+            # overcurrent ------ 01000000
+            # undercurrent ----- 10000000
 
-        simultaneous_faults = []
+            # Iterate over the bits in the fault string
+            # create a dictionary of fault tuples for setting the gui outputs per fault input
+            fault_mapping = {
+                7: (self.PowerRailFaultOutput, self.PowerRailStatusGOOD, self.PowerRailStatusBAD),
+                6: (self.CommFaultOutput, self.CommStatusGOOD, self.CommStatusBAD),
+                5: (self.VoltageFaultOutput, self.VoltageStatusGOOD, self.VoltageStatusBAD),
+                4: (self.VoltageFaultOutput, self.VoltageStatusGOOD, self.VoltageStatusBAD),
+                3: (self.TempFaultOutput, self.TempStatusGOOD_2, self.TempStatusBAD_2),
+                2: (self.TempFaultOutput, self.TempStatusGOOD_2, self.TempStatusBAD_2),
+                1: (self.CurrentFaultOutput, self.CurrentStatusGOOD, self.CurrentStatusBAD),
+                0: (self.CurrentFaultOutput, self.CurrentStatusGOOD, self.CurrentStatusBAD),
+            }
 
-        # indexes the fault_mapping, check if the index is 1
-        for index, (output, status_good, status_bad) in fault_mapping.items():
-            if int(res[index]) == 1:
-                simultaneous_faults.append(index)
+            simultaneous_faults = []
 
-        # clear the faults
-        for output, status_good, status_bad in fault_mapping.values():
-            output.setPlainText(" ")
-            status_good.setChecked(True)
-            status_bad.setChecked(False)
+            # indexes the fault_mapping, check if the index is 1
+            for index, (output, status_good, status_bad) in fault_mapping.items():
+                if int(res[index]) == 1:
+                    simultaneous_faults.append(index)
 
-        # set the gui output boxes according to the fault bits
-        for index in simultaneous_faults:
-            output, status_good, status_bad = fault_mapping[index]
-            output.setPlainText("FAULT")
-            status_good.setChecked(False)
-            status_bad.setChecked(True)
+            # clear the faults
+            for output, status_good, status_bad in fault_mapping.values():
+                output.setPlainText(" ")
+                status_good.setChecked(True)
+                status_bad.setChecked(False)
 
-        # Append data to the existing text
-        current_text = self.CriticalFaultsResultBox.toPlainText()
-        self.CriticalFaultsResultBox.setPlainText(f'{current_text}Module #{mod}, Cell #{cell}, Fault Code: {res}\n')
-        # TODO: see if we can have the box stick to the bottom when new ones get appended
+            # set the gui output boxes according to the fault bits
+            for index in simultaneous_faults:
+                output, status_good, status_bad = fault_mapping[index]
+                output.setPlainText("FAULT")
+                status_good.setChecked(False)
+                status_bad.setChecked(True)
 
-        # UPDATES FOR THE CELL VIEW TAB
-        # note: update measure cell voltage (CellVoltageResultBox) according to the cell selected
-        # note: we can just pass 'res' for setting the voltage b/c the data type for 'res' is dependent on the ID, which is handled in the case statements
-        # TODO: place each of these implementations in their proper case statements
-        current_cell = self.CurrentCellNumberBox.toPlainText()
-        # make sure the cell selected displays the cell voltage sent from the reading
-        if current_cell == cell:
-            cell_voltage = res
-            self.CellVoltageResultBox.setPlainText(cell_voltage)
-        # note: update measure cell current (CellCurrentResultBox) according to the cell selected
-        # make sure the cell selected displays the cell voltage sent from the reading
-        if current_cell == cell:
-            cell_current = res
-            self.CellCurrentResultBox.setPlainText(cell_current)
-        # TODO: update measure cell temp (CellTempResultBox) according to the cell selected
-        # make sure the cell selected displays the cell voltage sent from the reading
-        if current_cell == cell:
-            cell_temp = res
-            self.CellTempResultBox.setPlainText(cell_temp)
+            # update the fault message box
+            self.CriticalFaultsResultBox.setPlainText(f'Module #{mod}, Cell #{cell}, Fault Code: {res}\n')
 
-        # TODO: update the StateOfChargeResult according to the cell selected
-        if current_cell == cell:
-            soc = res
-            self.StateOfChargeResult.setPlainText(soc)
-        # TODO: remove this
-        if current_cell == cell:
-            soh = res
-            self.StateOfHealthResult.setPlainText(soh)
-        # TODO: update the StateOfPowerResult according to the cell selected
-        if current_cell == cell:
-            sop = res
-            self.StateOfPowerResult.setPlainText(sop)
+        # TODO: test for other packet IDs and update boxes accordingly
+
+        # # UPDATES FOR THE CELL VIEW TAB
+        # # note: update measure cell voltage (CellVoltageResultBox) according to the cell selected
+        # # note: we can just pass 'res' for setting the voltage b/c the data type for 'res' is dependent on the ID, which is handled in the case statements
+        # # TODO: place each of these implementations in their proper case statements
+        # current_cell = self.CurrentCellNumberBox.toPlainText()
+        # # make sure the cell selected displays the cell voltage sent from the reading
+        # if current_cell == cell:
+        #     cell_voltage = res
+        #     self.CellVoltageResultBox.setPlainText(cell_voltage)
+        # # note: update measure cell current (CellCurrentResultBox) according to the cell selected
+        # # make sure the cell selected displays the cell voltage sent from the reading
+        # if current_cell == cell:
+        #     cell_current = res
+        #     self.CellCurrentResultBox.setPlainText(cell_current)
+        # # TODO: update measure cell temp (CellTempResultBox) according to the cell selected
+        # # make sure the cell selected displays the cell voltage sent from the reading
+        # if current_cell == cell:
+        #     cell_temp = res
+        #     self.CellTempResultBox.setPlainText(cell_temp)
+        #
+        # # TODO: update the StateOfChargeResult according to the cell selected
+        # if current_cell == cell:
+        #     soc = res
+        #     self.StateOfChargeResult.setPlainText(soc)
+        # # TODO: remove this
+        # if current_cell == cell:
+        #     soh = res
+        #     self.StateOfHealthResult.setPlainText(soh)
+        # # TODO: update the StateOfPowerResult according to the cell selected
+        # if current_cell == cell:
+        #     sop = res
+        #     self.StateOfPowerResult.setPlainText(sop)
 
         # TODO: update the ContactorStateBlockStatusOutput according to the cell selected
         # TODO: update the ManualAutomaticStateBlockStatusOutput according to the cell selected
