@@ -17,7 +17,19 @@ def parser(data: str):
     if p_id == '7':
         # convert res to binary
         res = format(int(res, 16), '08b')  # returns binary value as a string
-    # else:
-    #TODO: result needs to be converted to a decimal because the res is being sent as a decimal right now
+    else:
+        # TODO: result needs to be converted to a decimal because the res is being sent as a decimal right now
+        # Split the string into whole and fractional parts
+        whole_part, fractional_part = res.split('.')
+
+        # Convert whole part from hexadecimal to decimal
+        whole_decimal = int(whole_part, 16)
+
+        # Convert fractional part from hexadecimal to decimal
+        fractional_decimal = int(fractional_part, 16) / (16 ** len(fractional_part))
+
+        # Combine whole and fractional parts
+        res = whole_decimal + fractional_decimal
+        # print(type(res))
 
     return int(p_id), int(mod), int(cell), res
