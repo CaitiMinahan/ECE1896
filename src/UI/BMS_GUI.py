@@ -859,7 +859,7 @@ class Ui_BMS_Dashboard(QMainWindow):
         #         1: lambda: code for voltage reading,
         #         2: lambda: code for current reading ,
         #         3: lambda: code for temp reading,
-        #         4: lambda: code for SOH,
+        #         SKIP 4 B/C WE GOT RID OF SOH
         #         5: lambda: code for SOC,
         #         6: lambda: code for SOP,
         #         7: lambda: code for faults,
@@ -937,7 +937,7 @@ class Ui_BMS_Dashboard(QMainWindow):
         if current_cell == cell:
             soc = res
             self.StateOfChargeResult.setPlainText(soc)
-        # TODO: update the StateOfHealthResult according to the cell selected
+        # TODO: remove this
         if current_cell == cell:
             soh = res
             self.StateOfHealthResult.setPlainText(soh)
