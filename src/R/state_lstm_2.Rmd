@@ -1,0 +1,249 @@
+```{python}
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+from tensorflow import keras
+from keras.models import Sequential
+from keras.layers import Dense
+from keras.layers import LSTM
+from sklearn.model_selection import train_test_split
+
+# adding new libraries
+import tensorflow as tf 
+from tensorflow.keras.models import Sequential 
+from tensorflow.keras.layers import *
+from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.losses import MeanSquaredError
+from tensorflow.keras.metrics import RootMeanSquaredError
+from tensorflow.keras import layers, Input
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import Normalizer, MinMaxScaler  
+from sklearn.metrics import mean_squared_error
+from tensorflow.keras.optimizers import Adam
+from scipy import stats
+```
+
+
+```{python}
+
+# Import Data
+df = pd.read_csv('batemo_model_data.csv')
+df.describe()
+
+# Remove Voltage readings < 2.5 V
+df = df[df['V'] >= 2.5]
+
+# Thin the dataset because fuck
+df = df.iloc[::20]
+
+```
+
+```{python}
+
+# Check to see if our Input data is normally distributed
+
+plt.figure(figsize = (14,5))
+sns.distplot(df['V'])
+plt.show()
+
+plt.figure(figsize = (14,5))
+sns.distplot(df['I'])
+plt.show()
+
+```
+
+```{python}
+
+# Define training variables
+# TODO: need to consider if keeping current (I) is a valuable input feature or not (test if the model performs better w/o it)
+X = df[['V', 'I']].values
+
+# TODO: add calculating SOP
+# LSTM output with 2 nodes (SOH and SOC) 
+# Y = df[['SOC', 'SOH']].values
+Y = df[['SOC']].values
+
+# Normalize input data because it is not normally distributed
+scaler = MinMaxScaler(feature_range=(0, 1))
+X_scaled = scaler.fit_transform(X)
+
+# # Check to see if our Input data is normally distributed
+# plt.figure(figsize = (14,5))
+# sns.distplot(V_scaled)
+# plt.show()
+# 
+# plt.figure(figsize = (14,5))
+# sns.distplot(X_scaled['I'])
+# plt.show()
+
+# Split the data into training and testing
+x_train, x_test, y_train, y_test = train_test_split(X, Y, test_size=0.2, random_state=42)  # use normalized features to prevent over-fitting (X_scaled)
+
+# Define function to create sequences
+# NOTE: The creation of input-output pairs allows the model to learn from historical context. The input sequences serve as a history of past observations, while the corresponding output (target) provides the next observation in the sequence.This historical context is crucial for making accurate predictions, especially in time-series forecasting or sequence prediction tasks where the future state depends on past states
+# def create_sequences(data, seq_length):
+#     X = []
+#     y = []
+#     for i in range(len(data) - seq_length):
+#         X.append(data[i:i + seq_length])  # Features (voltage, current, temperature, state of charge) are turned into a list of historical values 
+#         y.append(data[i + seq_length])     # Target variables (SOH and SOC) are turned into a list of historical values 
+#     return np.array(X), np.array(y)
+
+# Choose sequence length
+# seq_length = 1 # sequence length set to 1 to take immediate values from sensor reading during testing 
+# NOTE:  Even with seq_length of 1, organizing the data into sequences might provide the model with some historical context. Although the immediate historical context is limited, the model can still potentially learn from patterns and trends in the data over time
+# TODO: may need to increase the sequence length if the model performs poorly on testing (sensor) data 
+
+# Create sequences for training and testing data
+# X_train_seq, y_train_seq = create_sequences(x_train, seq_length)
+# X_test_seq, y_test_seq = create_sequences(x_test, seq_length)
+
+# print(X_train_seq.shape)
+# print(y_train_seq.shape)
+# print(X_test_seq.shape)
+# print(y_test_seq.shape)
+
+# reshape input to be [samples, time steps, features]
+x_train = np.reshape(x_train, (x_train.shape[0], 1, x_train.shape[1]))
+x_test = np.reshape(x_test, (x_test.shape[0], 1, x_test.shape[1]))
+
+```
+
+```{python}
+
+# Define model for predicting SOH and SOC 
+model = Sequential()
+
+model.add(InputLayer((1,2)))
+model.add(LSTM(50, return_sequences = True))     
+model.add(LSTM(50, return_sequences = True))
+model.add(LSTM(50))
+model.add(Dense(8, activation = 'relu'))
+model.add(Dense(1, activation = 'relu'))
+
+# Compile model with Adam optimizer and default learning rate
+early_stop = EarlyStopping(monitor = 'val_loss', patience = 2)
+
+model.compile(loss = MeanSquaredError(), 
+               optimizer = Adam(learning_rate = 0.0003), 
+               metrics = RootMeanSquaredError())
+
+# NOTE: .summary() is a method used in Keras, a high-level deep learning library, to display a summary of the neural network model's architecture. it will print out the layer name, layer type, output shape, number of parameters and trainable/non-trainable params
+model.summary()
+
+# Train the model and store the history
+history = model.fit(x_train, y_train, epochs=10, batch_size=32, validation_data=(x_test, y_test))
+
+# Extract loss values from the history
+train_loss = history.history['loss']
+val_loss = history.history['val_loss']
+epochs = range(1, len(train_loss) + 1)
+
+# Plotting the loss
+plt.figure(figsize = (14,5))
+plt.plot(epochs, train_loss, 'b', label='Training loss')
+plt.plot(epochs, val_loss, 'r', label='Validation loss')
+plt.title('Training and validation loss')
+plt.xlabel('Epochs')
+plt.ylabel('Loss')
+plt.legend()
+plt.show()
+
+```
+
+
+```{python}
+'''
+# Define model for predicting SOH and SOC 
+model = Sequential()
+
+# Defining a model for predicting SOH and SOC
+model.add(LSTM(50, activation='relu', input_shape=(X_train_seq.shape[1], X_train_seq.shape[2])))
+
+model.add(Dense(units=2))  # Output layer for two continuous values: SOC and SOH
+
+# Compile model with Adam optimizer and default learning rate
+model.compile(optimizer='adam', loss='mean_squared_error')
+
+# NOTE: .summary() is a method used in Keras, a high-level deep learning library, to display a summary of the neural network model's architecture. it will print out the layer name, layer type, output shape, number of parameters and trainable/non-trainable params
+model.summary()
+
+# Train the model and store the history
+history = model.fit(X_train_seq, y_train_seq, epochs=10, batch_size=32, validation_data=(X_test_seq, y_test_seq))
+
+# Extract loss values from the history
+train_loss = history.history['loss']
+val_loss = history.history['val_loss']
+epochs = range(1, len(train_loss) + 1)
+
+# Plotting the loss
+plt.plot(epochs, train_loss, 'b', label='Training loss')
+plt.plot(epochs, val_loss, 'r', label='Validation loss')
+plt.title('Training and validation loss')
+plt.xlabel('Epochs')
+plt.ylabel('Loss')
+plt.legend()
+plt.show()
+
+# TODO: THINGS TO CONSIDER FOR FINE-TUNING HYPERPARAMETERS
+# TODO: 1) consider altering the depth of the network. currently we have 1 hidden layer 
+# TODO: 2) consider altering the width of the network. currently there are 50 nodes 
+# TODO: 3) consider altering the activation function. right now it is set to be relu 
+# TODO: 4) consider altering the optimizer. right now it is set to Adam
+# TODO: 5) consider altering the number of epochs 
+'''
+```
+
+
+```{python}
+# make predictions
+trainPredict = model.predict(x_train)
+testPredict = model.predict(x_test)
+# invert predictions
+# trainPredict = scaler.inverse_transform(trainPredict)
+# trainY = scaler.inverse_transform([y_train])
+# testPredict = scaler.inverse_transform(testPredict)
+# testY = scaler.inverse_transform([y_test])
+# calculate root mean squared error
+trainScore = np.sqrt(mean_squared_error(y_train, trainPredict))
+print('Train Score: %.2f RMSE' % (trainScore))
+testScore = np.sqrt(mean_squared_error(y_test, testPredict))
+print('Test Score: %.2f RMSE' % (testScore))
+```
+
+```{python}
+# # Model Export
+# save Keras model
+model.save("model_file_name" +'.h5')
+
+# Load the Keras model
+model = tf.keras.models.load_model("model_file_name.h5")
+
+# Debugging with Logging
+print("Loaded Keras model")
+
+# Convert Keras model to TensorFlow Lite model
+converter = tf.lite.TFLiteConverter.from_keras_model(model)
+
+# Disable experimental lowering of tensor list ops
+converter._experimental_lower_tensor_list_ops = False
+
+# Specify to use select TensorFlow ops
+converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS, tf.lite.OpsSet.SELECT_TF_OPS]
+
+# Convert the model
+try:
+    tflite_model = converter.convert()
+    print("Model converted to TensorFlow Lite successfully")
+except Exception as e:
+    print("Error during model conversion:", e)
+
+# Save the TensorFlow Lite model to a file
+with open("model_file_name.tflite", 'wb') as f:
+    f.write(tflite_model)
+
+```
+

@@ -148,7 +148,7 @@ int main(void)
 
 		  datacheck = 0;
 
-		  HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox);
+//		  HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox);
 	  }
   }
   /* USER CODE END 3 */
