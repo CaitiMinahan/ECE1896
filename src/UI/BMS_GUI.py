@@ -925,6 +925,7 @@ class Ui_BMS_Dashboard(QMainWindow):
             cell_res_values = values.get(mod, {})  # Set default value to an empty dictionary if mod doesn't exist
 
         if p_id == 1:
+
             # UPDATES FOR THE CELL VIEW TAB
             # note: update cell voltage (CellVoltageResultBox) according to the cell selected
             current_cell = self.CurrentCellNumberBox.toPlainText()
