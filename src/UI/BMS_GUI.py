@@ -720,12 +720,10 @@ class Ui_BMS_Dashboard(QMainWindow):
         self.timer.start(100)  # Adjust the interval as needed
 
         # add elements to the dropdown menus
-        self.cellDropDownMenu.addItems(["Select Cell To View", "cell 1", "cell 2", "cell 3", "cell 4", "cell 5",
-                                        "cell 6", "cell 7", "cell 8", "cell 9", "cell 10", "cell 11", "cell 12"])
-        self.moduleDropDownMenu.addItems(["Select Module To View", "module 1", "module 2", "module 3", "module 4",
-                                          "module 5", "module 6", "module 7", "module 8", "module 9", "module 10",
-                                          "module 11", "module 12", "module 13", "module 14", "module 15", "module 16"])
-        self.slaveDropDownMenu.addItems(["Select Slave To View", "slave 1", "slave 2", "slave 3"])
+        self.cellDropDownMenu.addItems(["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"])
+        self.moduleDropDownMenu.addItems(["1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
+                                          "11", "12", "13", "14", "15", "16"])
+        self.slaveDropDownMenu.addItems(["1", "2", "3"])
 
         # Connect the currentIndexChanged signal of the combo box to your slot
         self.cellDropDownMenu.currentIndexChanged.connect(self.on_cell_dropdown_changed)
@@ -845,16 +843,26 @@ class Ui_BMS_Dashboard(QMainWindow):
     def handle_data(self, data):
         _translate = QtCore.QCoreApplication.translate
 
-        # print(data)
-
         # call the parser to receive module, cell and res of the input string passed over serial from the STM32
         p_id, mod, cell, res = parser(data)
 
-        print(p_id, mod, cell, res)
+        # print(p_id, mod, cell, res)
+
+        # TODO: test for other packet IDs and update boxes accordingly
+        # TODO: need to check the cell and module number and store res based off the specific cell and module
+        values = {}  # empty dictionary to store sensor readings according to the module and cell numbers
+
+        # Check if the mod key exists in the cell_values dictionary
+        if mod not in values:
+            # If not, create a new dictionary for the mod key
+            values[mod] = {}
+
+        # Store the res value for the given cell and mod
+        values[mod][cell] = res
+
+        # print(values)
 
         # TODO: Test all of the packet ids
-        # note: If the id is a fault add case statements for each bit in the result and set the error string correctly
-        # note: sample case statements for testing the packet ID, where each case has the implementation for reading in the packets and updating the GUI
         # cases = {
         #         1: lambda: code for voltage reading,
         #         2: lambda: code for current reading ,
@@ -914,17 +922,39 @@ class Ui_BMS_Dashboard(QMainWindow):
             # update the fault message box
             self.CriticalFaultsResultBox.setPlainText(f'Module #{mod}, Cell #{cell}, Fault Code: {res}\n')
 
-        # TODO: test for other packet IDs and update boxes accordingly
+            cell_res_values = values.get(mod, {})  # Set default value to an empty dictionary if mod doesn't exist
 
-        # # UPDATES FOR THE CELL VIEW TAB
-        # # note: update measure cell voltage (CellVoltageResultBox) according to the cell selected
-        # # note: we can just pass 'res' for setting the voltage b/c the data type for 'res' is dependent on the ID, which is handled in the case statements
-        # # TODO: place each of these implementations in their proper case statements
-        # current_cell = self.CurrentCellNumberBox.toPlainText()
-        # # make sure the cell selected displays the cell voltage sent from the reading
-        # if current_cell == cell:
-        #     cell_voltage = res
-        #     self.CellVoltageResultBox.setPlainText(cell_voltage)
+        if p_id == 1:
+            # UPDATES FOR THE CELL VIEW TAB
+            # note: update cell voltage (CellVoltageResultBox) according to the cell selected
+            current_cell = self.CurrentCellNumberBox.toPlainText()
+            # make sure the cell selected displays the cell voltage sent from the reading
+            if current_cell == str(cell):
+                cell_voltage = res
+                self.CellVoltageResultBox.setPlainText(cell_voltage)
+            else:
+                self.CellVoltageResultBox.setPlainText("")
+
+            # UPDATES FOR THE PACK VIEW TAB
+            # note: update cell voltage according to the cell selected
+            current_module = self.CurrentModuleNumberBox.toPlainText()
+            if current_module == str(mod):
+                # Retrieve the corresponding res values for the module
+                cell_res_values = values.get(mod, {})  # Set default value to an empty dictionary if mod doesn't exist
+                for cell_num in range(1, 13):  # Assuming cell numbers are from 1 to 12
+                    # Retrieve the corresponding res value for the cell
+                    res_for_cell = cell_res_values.get(cell_num)  # Set default value to None if cell doesn't exist
+                    if res_for_cell is not None:  # Check if res value exists
+                        # Update the GUI for each cell
+                        # Construct the attribute name dynamically based on the cell number
+                        attribute_name = f"Cell_{cell_num}_BalancingVoltage"
+                        # Get the corresponding attribute using getattr
+                        cell_box = getattr(self, attribute_name, None)
+                        # Check if the attribute exists
+                        if cell_box is not None:
+                            # Update the text box value
+                            cell_box.setPlainText(str(res_for_cell))
+
         # # note: update measure cell current (CellCurrentResultBox) according to the cell selected
         # # make sure the cell selected displays the cell voltage sent from the reading
         # if current_cell == cell:
@@ -955,14 +985,6 @@ class Ui_BMS_Dashboard(QMainWindow):
         # TODO: update the BMSOperationsStateBlockStatusOutput according to the cell selected
         # TODO: update the ChargeControlStatusStateBlockStatusOutput according to the cell selected
 
-        # NOTE: the input values will be specific to the cell, so it needs to be in a form which specifies the module, cell, and value
-
-        # UPDATES FOR THE PACK VIEW TAB
-        # TODO: update the (Cell_1_BalancingVoltage-Cell_12_BalancingVoltage) according to the module selected
-        # TODO: update the (Cell_1_BalancingCurrent-Cell_12_BalancingCurrent) according to the module selected
-        # TODO: update the (Cell_1_BalancingTemp-Cell_12_BalancingTemp) according to the module selected
-
-        # NOTE: the input values will be specific to the module, so it needs to be in a form which specifies the module, cell, and value
 
         # UPDATES FOR THE SLAVE BOARD VIEW TAB
         # TODO: update the (Segment_1_Voltage_2-Segment_16_Voltage) according to the slave selected

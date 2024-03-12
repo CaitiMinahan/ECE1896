@@ -9,8 +9,6 @@ def parser(data: str):
     # remove any characters from data that aren't numeric or '.'
     data = re.sub(r'[^0-9.]', '', data)
 
-    # print(data)
-
     p_id = data[p_id_idx]
     mod = data[mod_idx]
     cell = data[cell_idx]
@@ -20,10 +18,6 @@ def parser(data: str):
         # convert res to binary
         res = format(int(res, 16), '08b')  # returns binary value as a string
     # else:
-    #     result needs to be converted to a decimal
-
-    # print(res)
+    #TODO: result needs to be converted to a decimal
 
     return int(p_id), int(mod), int(cell), res
-    # return mod, cell, res
-
