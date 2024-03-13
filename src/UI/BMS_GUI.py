@@ -846,7 +846,7 @@ class Ui_BMS_Dashboard(QMainWindow):
         # call the parser to receive module, cell and res of the input string passed over serial from the STM32
         p_id, mod, cell, res = parser(data)
 
-        print(res)
+        # print(res)
 
         values = {}  # empty dictionary to store sensor readings according to the module and cell numbers
 
@@ -882,8 +882,6 @@ class Ui_BMS_Dashboard(QMainWindow):
             if current_cell == str(cell):
                 cell_voltage = res
                 self.CellVoltageResultBox.setPlainText(str(cell_voltage))
-            else:
-                self.CellVoltageResultBox.setPlainText("0")
 
             # UPDATES FOR THE PACK VIEW TAB
             # note: update cell voltage according to the cell selected
@@ -915,8 +913,6 @@ class Ui_BMS_Dashboard(QMainWindow):
             if current_cell == str(cell):
                 cell_current = res
                 self.CellCurrentResultBox.setPlainText(str(cell_current))
-            else:
-                self.CellCurrentResultBox.setPlainText("0")
 
             # UPDATES FOR THE PACK VIEW TAB
             # note: update cell current according to the cell selected
@@ -948,8 +944,6 @@ class Ui_BMS_Dashboard(QMainWindow):
             if current_cell == str(cell):
                 cell_temp = res
                 self.CellTempResultBox.setPlainText(str(cell_temp))
-            else:
-                self.CellTempResultBox.setPlainText("0")
 
             # UPDATES FOR THE PACK VIEW TAB
             # note: update cell temp according to the cell selected
@@ -983,8 +977,6 @@ class Ui_BMS_Dashboard(QMainWindow):
             if current_cell == str(cell):
                 cell_soc = res
                 self.StateOfChargeResult.setPlainText(str(cell_soc))
-            else:
-                self.StateOfChargeResult.setPlainText("0")
 
         # UPDATE THE CALCULATED SOP
         if p_id == 6:
@@ -996,58 +988,60 @@ class Ui_BMS_Dashboard(QMainWindow):
             if current_cell == str(cell):
                 cell_sop = res
                 self.StateOfPowerResult.setPlainText(str(cell_sop))
-            else:
-                self.StateOfPowerResult.setPlainText("0")
 
         # UPDATE THE FAULT FLAGS
         if p_id == 7:
 
-            # faults:
-            # power rail fault - 00000001
-            # comm fault ------- 00000010
-            # overvoltage ------ 00000100
-            # undervoltage ----- 00001000
-            # overtemp --------- 00010000
-            # undertemp -------- 00100000
-            # overcurrent ------ 01000000
-            # undercurrent ----- 10000000
-
-            # Iterate over the bits in the fault string
-            # create a dictionary of fault tuples for setting the gui outputs per fault input
-            fault_mapping = {
-                7: (self.PowerRailFaultOutput, self.PowerRailStatusGOOD, self.PowerRailStatusBAD),
-                6: (self.CommFaultOutput, self.CommStatusGOOD, self.CommStatusBAD),
-                5: (self.VoltageFaultOutput, self.VoltageStatusGOOD, self.VoltageStatusBAD),
-                4: (self.VoltageFaultOutput, self.VoltageStatusGOOD, self.VoltageStatusBAD),
-                3: (self.TempFaultOutput, self.TempStatusGOOD_2, self.TempStatusBAD_2),
-                2: (self.TempFaultOutput, self.TempStatusGOOD_2, self.TempStatusBAD_2),
-                1: (self.CurrentFaultOutput, self.CurrentStatusGOOD, self.CurrentStatusBAD),
-                0: (self.CurrentFaultOutput, self.CurrentStatusGOOD, self.CurrentStatusBAD),
-            }
-
-            simultaneous_faults = []
-
-            # indexes the fault_mapping, check if the index is 1
-            for index, (output, status_good, status_bad) in fault_mapping.items():
-                if int(res[index]) == 1:
-                    simultaneous_faults.append(index)
-
-            # clear the faults
-            for output, status_good, status_bad in fault_mapping.values():
-                output.setPlainText(" ")
-                status_good.setChecked(True)
-                status_bad.setChecked(False)
-
-            # set the gui output boxes according to the fault bits
-            for index in simultaneous_faults:
-                output, status_good, status_bad = fault_mapping[index]
-                output.setPlainText("FAULT")
-                status_good.setChecked(False)
-                status_bad.setChecked(True)
-
             # update the fault message box
             # TODO: do we want the fault message to be the binary value, or should we pass a string according to the binary value?
-            self.CriticalFaultsResultBox.setPlainText(f'Module #{mod}, Cell #{cell}, Fault Code: {res}\n')
+            current_cell = self.CurrentCellNumberBox.toPlainText()
+            if current_cell == str(cell):
+                self.CriticalFaultsResultBox.setPlainText(f'Cell #{self.cellDropDownMenu.currentText()}, Fault Code: {res}\n')
+            # if current_module == str(mod):
+
+                # faults:
+                # power rail fault - 00000001
+                # comm fault ------- 00000010
+                # overvoltage ------ 00000100
+                # undervoltage ----- 00001000
+                # overtemp --------- 00010000
+                # undertemp -------- 00100000
+                # overcurrent ------ 01000000
+                # undercurrent ----- 10000000
+
+                # Iterate over the bits in the fault string
+                # create a dictionary of fault tuples for setting the gui outputs per fault input
+                fault_mapping = {
+                    7: (self.PowerRailFaultOutput, self.PowerRailStatusGOOD, self.PowerRailStatusBAD),
+                    6: (self.CommFaultOutput, self.CommStatusGOOD, self.CommStatusBAD),
+                    5: (self.VoltageFaultOutput, self.VoltageStatusGOOD, self.VoltageStatusBAD),
+                    4: (self.VoltageFaultOutput, self.VoltageStatusGOOD, self.VoltageStatusBAD),
+                    3: (self.TempFaultOutput, self.TempStatusGOOD_2, self.TempStatusBAD_2),
+                    2: (self.TempFaultOutput, self.TempStatusGOOD_2, self.TempStatusBAD_2),
+                    1: (self.CurrentFaultOutput, self.CurrentStatusGOOD, self.CurrentStatusBAD),
+                    0: (self.CurrentFaultOutput, self.CurrentStatusGOOD, self.CurrentStatusBAD),
+                }
+
+                simultaneous_faults = []
+
+                # indexes the fault_mapping, check if the index is 1
+                for index, (output, status_good, status_bad) in fault_mapping.items():
+                    if int(res[index]) == 1:
+                        simultaneous_faults.append(index)
+
+                # clear the faults
+                for output, status_good, status_bad in fault_mapping.values():
+                    output.setPlainText(" ")
+                    status_good.setChecked(True)
+                    status_bad.setChecked(False)
+
+                # set the gui output boxes according to the fault bits
+                for index in simultaneous_faults:
+                    output, status_good, status_bad = fault_mapping[index]
+                    output.setPlainText("FAULT")
+                    status_good.setChecked(False)
+                    status_bad.setChecked(True)
+
 
         # TODO: update the ContactorStateBlockStatusOutput according to the cell selected
         # TODO: update the ManualAutomaticStateBlockStatusOutput according to the cell selected

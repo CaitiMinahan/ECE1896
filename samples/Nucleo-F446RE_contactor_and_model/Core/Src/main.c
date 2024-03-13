@@ -98,7 +98,6 @@ typedef struct {
 
     // State Estimations
     uint32_t SOC; // State of Charge
-    uint32_t SOH; // State of Health
     uint32_t SOP; // State of Power
 
     // Physics
@@ -131,6 +130,30 @@ typedef enum {
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+// Function to initialize a Cell struct with default values
+Cell initCellDefaults(uint8_t module, uint8_t cell) {
+    Cell newCell;
+
+    // Assign default values
+    newCell.module = module;
+    newCell.cell = cell;
+    newCell.SOC = 0;
+    newCell.SOP = 0;
+    newCell.V = 0;
+    newCell.I = 0;
+    newCell.T = 0;
+    newCell.power_rail = false;
+    newCell.comm = false;
+    newCell.over_voltage = false;
+    newCell.under_voltage = false;
+    newCell.over_temp = false;
+    newCell.under_temp = false;
+    newCell.over_current = false;
+    newCell.under_current = false;
+
+    return newCell;
+}
+
 uint16_t getCellFaults(Cell* cell){
     uint16_t result = 0;
 
@@ -375,17 +398,22 @@ int startupSequence(void){
 
 void checkStatusTransmit(Cell* cell){
 
+	// TODO: Change this to read from BQ Board
 	// append id, mod and cell number to sensor reading
     HAL_ADC_Start_DMA(&hadc1,(uint32_t *) cell_analog_values, 3); // Start Analog to Digital conversion
 	HAL_ADC_PollForConversion(&hadc1, 1000);					 // Poll Value Read
 	cell_voltage = (float)cell_analog_values[1]/1000;   // Store Value in (mV) form (V)
+	cell->V = cell_voltage;
 	cell_vref = (float)cell_analog_values[2]/1000;
 
 	// calculate I = cell_voltage / known R
 	cell_current = cell_voltage / known_resistance;
+	cell->I = cell_current;
 
+	// TODO: determine temp based off linear eq of degrees vs ohms
 	// calculate thermistor R = (Vref - V) /I
 	thermistor_resistance = (cell_vref - cell_voltage) / cell_current;
+	cell->T = thermistor_resistance;
 
 	// Convert module number to hex
 	uint16_t mod_num = (uint16_t)cell->module;
@@ -437,7 +465,6 @@ void checkStatusTransmit(Cell* cell){
 	sprintf(ResultStr, "2%s%s%s.%s\r\n", mod_numStr, cell_numStr, IntPartStr, FracPartStr);
 	HAL_UART_Transmit(&huart2, (uint8_t*)ResultStr, sizeof(ResultStr), 100);
 
-	// TODO: determine temp based off linear eq of degrees vs ohms
 	// Convert the integer part to a hexadecimal string
 	intPart = (uint16_t)thermistor_resistance;
 	sprintf(IntPartStr, "%02X", intPart);
@@ -486,7 +513,7 @@ void checkStatusTransmit(Cell* cell){
 	HAL_UART_Transmit(&huart2, (uint8_t*)ResultStr, sizeof(ResultStr), 100);
 
 	// Delay for debug
-	HAL_Delay(1000);
+//	HAL_Delay(1000);
 
 	return 0;
 }
@@ -511,25 +538,19 @@ int main(void)
   // Fault
   uint16_t Fault;
 
-	// Define the Cell
-  Cell cell0 = {
-	.module = 1, // Module Number
-	.cell = 2,   // Cell Number
-	.SOC = 0, // State of Charge
-	.SOH = 0, // State of Health
-	.SOP = 0, // State of Power
-	.V = 0, // Voltage
-	.I = 0, // Current
-	.T = 0, // Temperature
-	.power_rail = false,
-	.comm = false,
-	.over_voltage = false,
-	.under_voltage = false,
-	.over_temp = false,
-	.under_temp = false,
-	.over_current = false,
-	.under_current = false
-  };
+  // Define the Cells
+  Cell cell1 = initCellDefaults(1, 1);
+  Cell cell2 = initCellDefaults(1, 2);
+  Cell cell3 = initCellDefaults(1, 3);
+  Cell cell4 = initCellDefaults(1, 4);
+  Cell cell5 = initCellDefaults(1, 5);
+  Cell cell6 = initCellDefaults(1, 6);
+  Cell cell7 = initCellDefaults(1, 7);
+  Cell cell8 = initCellDefaults(1, 8);
+  Cell cell9 = initCellDefaults(1, 9);
+  Cell cell10 = initCellDefaults(1, 10);
+  Cell cell11 = initCellDefaults(1, 11);
+  Cell cell12 = initCellDefaults(1, 12);
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -583,7 +604,18 @@ int main(void)
     /* USER CODE BEGIN 3 */
 
 	  // TODO: loop through every cell in the pack for every module
-	  checkStatusTransmit(&cell0);
+	  checkStatusTransmit(&cell1);
+	  checkStatusTransmit(&cell2);
+	  checkStatusTransmit(&cell3);
+	  checkStatusTransmit(&cell4);
+	  checkStatusTransmit(&cell5);
+	  checkStatusTransmit(&cell6);
+	  checkStatusTransmit(&cell7);
+	  checkStatusTransmit(&cell8);
+	  checkStatusTransmit(&cell9);
+	  checkStatusTransmit(&cell10);
+	  checkStatusTransmit(&cell11);
+	  checkStatusTransmit(&cell12);
 
 	  if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_9) && !HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_8)){
 		  // Turn ON LED
@@ -591,10 +623,10 @@ int main(void)
 		  HAL_Delay(100);
 
 		  // Set the Cell Over Temp Fault
-		  setCellFaults(&cell0, OVER_TEMP_FAULT);
+		  setCellFaults(&cell1, OVER_TEMP_FAULT);
 
 		  // Get the Cell Over Temp Fault
-		  Fault = getCellFaults(&cell0);
+		  Fault = getCellFaults(&cell1);
 
 		  // Convert the result to a hexadecimal string
 		  char FaultStr[6]; // Buffer to hold the result string
@@ -604,7 +636,7 @@ int main(void)
 		  HAL_CAN_AddTxMessage(&hcan1, &TxHeader, FaultStr, &TxMailbox);
 
 		  // Clear the Cell Over Current Fault
-		  clearCellFault(&cell0, OVER_CURRENT_FAULT);
+		  clearCellFault(&cell1, OVER_CURRENT_FAULT);
 
 		  // Turn OFF LED
 		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, 0);
@@ -616,10 +648,10 @@ int main(void)
 		  HAL_Delay(100);
 
 		  // Set the Cell Over Current Fault
-		  setCellFaults(&cell0, OVER_CURRENT_FAULT);
+		  setCellFaults(&cell1, OVER_CURRENT_FAULT);
 
 		  // Get the Cell Over Current Fault
-		  Fault = getCellFaults(&cell0);
+		  Fault = getCellFaults(&cell1);
 
 		  // Convert the result to a hexadecimal string
 		  char FaultStr[6]; // Buffer to hold the result string
@@ -629,11 +661,13 @@ int main(void)
 		  HAL_CAN_AddTxMessage(&hcan1, &TxHeader, FaultStr, &TxMailbox);
 
 		  // Clear the Cell Over Temp Fault
-		  clearCellFault(&cell0, OVER_TEMP_FAULT);
+		  clearCellFault(&cell1, OVER_TEMP_FAULT);
 
 		  // Turn OFF LED
 		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, 0);
 	  }
+
+//	  HAL_Delay(1000);
   }
   /* USER CODE END 3 */
 }
