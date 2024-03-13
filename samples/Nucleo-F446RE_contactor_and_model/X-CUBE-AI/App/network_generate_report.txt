@@ -1,0 +1,184 @@
+Neural Network Tools for STM32 family v1.7.0 (stm.ai v8.1.0-19520)
+Created date          : 2024-03-11 19:17:44
+Parameters            : generate --name network -m C:/Users/LucasTroy/Downloads/soc_lstm.h5 --type keras --compression none --verbosity 1 --workspace C:\Users\LUCAST~1\AppData\Local\Temp\mxAI_workspace11170211822712002924551254453846136 --output C:\Users\LucasTroy\.stm32cubemx\network_output --allocate-inputs --series stm32f4 --allocate-outputs
+
+Exec/report summary (generate)
+----------------------------------------------------------------------------------------------------------------
+model file         :   C:\Users\LucasTroy\Downloads\soc_lstm.h5                                                 
+type               :   keras                                                                                    
+c_name             :   network                                                                                  
+compression        :   none                                                                                     
+options            :   allocate-inputs, allocate-outputs                                                        
+optimization       :   balanced                                                                                 
+target/series      :   stm32f4                                                                                  
+workspace dir      :   C:\Users\LUCAST~1\AppData\Local\Temp\mxAI_workspace11170211822712002924551254453846136   
+output dir         :   C:\Users\LucasTroy\.stm32cubemx\network_output                                           
+model_fmt          :   float                                                                                    
+model_name         :   soc_lstm                                                                                 
+model_hash         :   cfa2c155721d51e6b34add198471acbb                                                         
+params #           :   51,417 items (200.85 KiB)                                                                
+----------------------------------------------------------------------------------------------------------------
+input 1/1          :   'input_0' (domain:activations/**default**)                                               
+                   :   2 items, 8 B, ai_float, float, (1,1,2)                                                   
+output 1/1         :   'dense_21' (domain:activations/**default**)                                              
+                   :   1 items, 4 B, ai_float, float, (1,1)                                                     
+macc               :   51,576                                                                                   
+weights (ro)       :   206,268 B (201.43 KiB) (1 segment) / +600(+0.3%) vs float model                          
+activations (rw)   :   1,800 B (1.76 KiB) (1 segment) *                                                         
+ram (total)        :   1,800 B (1.76 KiB) = 1,800 + 0 + 0                                                       
+----------------------------------------------------------------------------------------------------------------
+(*) 'input'/'output' buffers can be used from the activations buffer
+
+Model name - soc_lstm ['input_0'] ['dense_21']
+------ -------------------------------- ----------------------- --------------- -------- ---------------- --- ------------------ ------------------ ----------------------------- 
+m_id   layer (type,original)            oshape                  param/size          macc     connected to   | c_size             c_macc             c_type                        
+------ -------------------------------- ----------------------- --------------- -------- ---------------- --- ------------------ ------------------ ----------------------------- 
+0      input_0 (Input, None)            [b:None,h:1,h:1,c:2]                                                | +43,000(+100.0%)   +10,650(+100.0%)   lstm_of32[0]                  
+       lstm_20 (LSTM, LSTM)             [b:None,h:1,h:1,c:50]   10,600/42,400     10,650          input_0   | -42,400(-100.0%)   -10,650(-100.0%)   
+------ -------------------------------- ----------------------- --------------- -------- ---------------- --- ------------------ ------------------ ----------------------------- 
+1      lstm_21 (LSTM, LSTM)             [b:None,h:1,h:1,c:50]   20,200/80,800     20,250          lstm_20   | +600(+0.7%)                           lstm_of32[1]                  
+------ -------------------------------- ----------------------- --------------- -------- ---------------- --- ------------------ ------------------ ----------------------------- 
+2      lstm_22 (LSTM, LSTM)             [b:None,c:50]           20,200/80,800     20,250          lstm_21   | +600(+0.7%)                           lstm_of32[2]                  
+------ -------------------------------- ----------------------- --------------- -------- ---------------- --- ------------------ ------------------ ----------------------------- 
+3      dense_20_dense (Dense, Dense)    [b:None,c:8]            408/1,632            408          lstm_22   |                    +8(+2.0%)          dense_of32/nl_of32[3, 4]      
+       dense_20 (Nonlinearity, Dense)   [b:None,c:8]                                   8   dense_20_dense   |                    -8(-100.0%)        
+------ -------------------------------- ----------------------- --------------- -------- ---------------- --- ------------------ ------------------ ----------------------------- 
+4      dense_21_dense (Dense, Dense)    [b:None,c:1]            9/36                   9         dense_20   |                    +1(+11.1%)         dense_of32/nl_of32[o][5, 6]   
+       dense_21 (Nonlinearity, Dense)   [b:None,c:1]                                   1   dense_21_dense   |                    -1(-100.0%)        
+------ -------------------------------- ----------------------- --------------- -------- ---------------- --- ------------------ ------------------ ----------------------------- 
+model/c-model: macc=51,576/51,576  weights=205,668/206,268 +600(+0.3%) activations=--/1,800 io=--/0
+
+
+
+Generated C-graph summary
+------------------------------------------------------------------------------------------------------------------------
+model name            : soc_lstm
+c-name                : network
+c-node #              : 7
+c-array #             : 25
+activations size      : 1800 (1 segment)
+weights size          : 206268 (1 segment)
+macc                  : 51576
+inputs                : ['input_0_output']
+outputs               : ['dense_21_output']
+
+C-Arrays (25)
+------ ------------------------ ------------- ------------------------- ------------- --------- --------- 
+c_id   name (*_array)           item/size     domain/mem-pool           c-type        fmt       comment   
+------ ------------------------ ------------- ------------------------- ------------- --------- --------- 
+0      dense_20_dense_bias      8/32          weights/weights           const float   float32             
+1      dense_21_dense_weights   8/32          weights/weights           const float   float32             
+2      dense_21_dense_bias      1/4           weights/weights           const float   float32             
+3      lstm_20_scratch0         350/1400      activations/**default**   float         float32             
+4      lstm_21_scratch0         350/1400      activations/**default**   float         float32             
+5      lstm_22_scratch0         350/1400      activations/**default**   float         float32             
+6      input_0_output           2/8           activations/**default**   float         float32   /input    
+7      lstm_20_output0          50/200        activations/**default**   float         float32             
+8      lstm_21_output0          50/200        activations/**default**   float         float32             
+9      lstm_22_output0          50/200        activations/**default**   float         float32             
+10     dense_20_dense_output    8/32          activations/**default**   float         float32             
+11     dense_20_output          8/32          activations/**default**   float         float32             
+12     dense_21_dense_output    1/4           activations/**default**   float         float32             
+13     dense_21_output          1/4           activations/**default**   float         float32   /output   
+14     lstm_20_kernel           400/1600      weights/weights           const float   float32             
+15     lstm_20_recurrent        10000/40000   weights/weights           const float   float32             
+16     lstm_20_peephole         150/600       weights/weights           const float   float32             
+17     lstm_20_bias             200/800       weights/weights           const float   float32             
+18     lstm_21_kernel           10000/40000   weights/weights           const float   float32             
+19     lstm_21_recurrent        10000/40000   weights/weights           const float   float32             
+20     lstm_21_bias             200/800       weights/weights           const float   float32             
+21     lstm_22_kernel           10000/40000   weights/weights           const float   float32             
+22     lstm_22_recurrent        10000/40000   weights/weights           const float   float32             
+23     lstm_22_bias             200/800       weights/weights           const float   float32             
+24     dense_20_dense_weights   400/1600      weights/weights           const float   float32             
+------ ------------------------ ------------- ------------------------- ------------- --------- --------- 
+
+C-Layers (7)
+------ ---------------- ---- ------------ ------- ------- --------------------------- ------------------ 
+c_id   name (*_layer)   id   layer_type   macc    rom     tensors                     shape (array id)   
+------ ---------------- ---- ------------ ------- ------- --------------------------- ------------------ 
+0      lstm_20          0    lstm         10650   43000   I: input_0_output           (1,1,2) (6)        
+                                                          S: lstm_20_scratch0                            
+                                                          W: lstm_20_kernel           (2,200) (14)       
+                                                          W: lstm_20_recurrent        (50,200) (15)      
+                                                          W: lstm_20_peephole         (1,1,1,150) (16)   
+                                                          W: lstm_20_bias             (200,) (17)        
+                                                          O: lstm_20_output0          (1,1,50) (7)       
+------ ---------------- ---- ------------ ------- ------- --------------------------- ------------------ 
+1      lstm_21          1    lstm         20250   81400   I: lstm_20_output0          (1,1,50) (7)       
+                                                          S: lstm_21_scratch0                            
+                                                          W: lstm_21_kernel           (50,200) (18)      
+                                                          W: lstm_21_recurrent        (50,200) (19)      
+                                                          W: lstm_20_peephole         (1,1,1,150) (16)   
+                                                          W: lstm_21_bias             (200,) (20)        
+                                                          O: lstm_21_output0          (1,1,50) (8)       
+------ ---------------- ---- ------------ ------- ------- --------------------------- ------------------ 
+2      lstm_22          2    lstm         20250   81400   I: lstm_21_output0          (1,1,50) (8)       
+                                                          S: lstm_22_scratch0                            
+                                                          W: lstm_22_kernel           (50,200) (21)      
+                                                          W: lstm_22_recurrent        (50,200) (22)      
+                                                          W: lstm_20_peephole         (1,1,1,150) (16)   
+                                                          W: lstm_22_bias             (200,) (23)        
+                                                          O: lstm_22_output0          (1,50) (9)         
+------ ---------------- ---- ------------ ------- ------- --------------------------- ------------------ 
+3      dense_20_dense   3    dense        408     1632    I: lstm_22_output0          (1,50) (9)         
+                                                          W: dense_20_dense_weights   (50,8) (24)        
+                                                          W: dense_20_dense_bias      (8,) (0)           
+                                                          O: dense_20_dense_output    (1,8) (10)         
+------ ---------------- ---- ------------ ------- ------- --------------------------- ------------------ 
+4      dense_20         3    nl           8       0       I: dense_20_dense_output    (1,8) (10)         
+                                                          O: dense_20_output          (1,8) (11)         
+------ ---------------- ---- ------------ ------- ------- --------------------------- ------------------ 
+5      dense_21_dense   4    dense        9       36      I: dense_20_output          (1,8) (11)         
+                                                          W: dense_21_dense_weights   (8,1) (1)          
+                                                          W: dense_21_dense_bias      (1,) (2)           
+                                                          O: dense_21_dense_output    (1,1) (12)         
+------ ---------------- ---- ------------ ------- ------- --------------------------- ------------------ 
+6      dense_21         4    nl           1       0       I: dense_21_dense_output    (1,1) (12)         
+                                                          O: dense_21_output          (1,1) (13)         
+------ ---------------- ---- ------------ ------- ------- --------------------------- ------------------ 
+
+
+
+Number of operations per c-layer
+------- ------ ------------------------ -------- -------------- -------- ---------- 
+c_id    m_id   name (type)                   #op           type   #param   sparsity 
+------- ------ ------------------------ -------- -------------- -------- ---------- 
+0       0      lstm_20 (lstm)             10,650   smul_f32_f32   10,750     0.0140 
+1       1      lstm_21 (lstm)             20,250   smul_f32_f32   20,350     0.0074 
+2       2      lstm_22 (lstm)             20,250   smul_f32_f32   20,350     0.0074 
+3       3      dense_20_dense (dense)        408   smul_f32_f32      408     0.0000 
+4       3      dense_20 (nl)                   8     op_f32_f32          
+5       4      dense_21_dense (dense)          9   smul_f32_f32        9     0.0000 
+6       4      dense_21 (nl)                   1     op_f32_f32          
+------- ------ ------------------------ -------- -------------- -------- ---------- 
+total                                     51,576                  51,867     0.0087 
+
+Number of operation types
+---------------- -------- ----------- 
+operation type          #           % 
+---------------- -------- ----------- 
+smul_f32_f32       51,567      100.0% 
+op_f32_f32              9        0.0% 
+
+Complexity report (model)
+------ ---------------- ------------------------- ------------------------- -------- 
+m_id   name             c_macc                    c_rom                     c_id     
+------ ---------------- ------------------------- ------------------------- -------- 
+0      input_0          ||||||||          20.6%   ||||||||          20.8%   [0]      
+1      lstm_21          ||||||||||||||||  39.3%   ||||||||||||||||  39.5%   [1]      
+2      lstm_22          ||||||||||||||||  39.3%   ||||||||||||||||  39.5%   [2]      
+3      dense_20_dense   |                  0.8%   |                  0.8%   [3, 4]   
+4      dense_21_dense   |                  0.0%   |                  0.0%   [5, 6]   
+------ ---------------- ------------------------- ------------------------- -------- 
+macc=51,576 weights=206,268 act=1,800 ram_io=0
+
+Generated files (7)
+---------------------------------------------------------------------- 
+C:\Users\LucasTroy\.stm32cubemx\network_output\network_config.h        
+C:\Users\LucasTroy\.stm32cubemx\network_output\network.h               
+C:\Users\LucasTroy\.stm32cubemx\network_output\network.c               
+C:\Users\LucasTroy\.stm32cubemx\network_output\network_data_params.h   
+C:\Users\LucasTroy\.stm32cubemx\network_output\network_data_params.c   
+C:\Users\LucasTroy\.stm32cubemx\network_output\network_data.h          
+C:\Users\LucasTroy\.stm32cubemx\network_output\network_data.c          

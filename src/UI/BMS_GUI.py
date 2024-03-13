@@ -81,6 +81,7 @@ class Ui_BMS_Dashboard(QMainWindow):
             serial_reader.start()
         else:
             QApplication.quit()  # Close the program if no selection is made
+
         BMS_Dashboard.setObjectName("self")
         BMS_Dashboard.resize(455, 801)
         self.BMS_Diagnostics_Dashboard_Title = QtWidgets.QTextBrowser(BMS_Dashboard)
@@ -719,133 +720,334 @@ class Ui_BMS_Dashboard(QMainWindow):
         self.timer.start(100)  # Adjust the interval as needed
 
         # add elements to the dropdown menus
-        self.cellDropDownMenu.addItems(["Select Cell To View", "cell 1", "cell 2", "cell 3", "cell 4", "cell 5", "cell 6", "cell 7", "cell 8", "cell 9", "cell 10", "cell 11", "cell 12"])
-        self.moduleDropDownMenu.addItems(["Select Module To View", "module 1", "module 2", "module 3", "module 4"]) # TODO: change to be up to 16 modules
-        self.slaveDropDownMenu.addItems(["Select Slave To View", "slave 1", "slave 2", "slave 3"])
+        self.cellDropDownMenu.addItems(["Select Cell to View", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"])
+        self.moduleDropDownMenu.addItems(["Select Module to View", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
+                                          "11", "12", "13", "14", "15", "16"])
+        self.slaveDropDownMenu.addItems(["Select Slave to View", "1", "2", "3"])
 
         # Connect the currentIndexChanged signal of the combo box to your slot
         self.cellDropDownMenu.currentIndexChanged.connect(self.on_cell_dropdown_changed)
         self.moduleDropDownMenu.currentIndexChanged.connect(self.on_module_dropdown_changed)
         self.slaveDropDownMenu.currentIndexChanged.connect(self.on_slave_dropdown_changed)
 
-        # set all the fault buttons to be GOOD by default
+        # Cell View tab default values:
         self.PowerRailStatusGOOD.setChecked(True)
         self.CurrentStatusGOOD.setChecked(True)
         self.VoltageStatusGOOD.setChecked(True)
         self.TempStatusGOOD_2.setChecked(True)
         self.CommStatusGOOD.setChecked(True)
+        self.CellVoltageResultBox.setPlainText("0")
+        self.CellCurrentResultBox.setPlainText("0")
+        self.CellTempResultBox.setPlainText("0")
+        self.CriticalFaultsResultBox.setPlainText("0")
+        self.StateOfChargeResult.setPlainText("0")
+        self.StateOfHealthResult.setPlainText("0")
+        self.StateOfPowerResult.setPlainText("0")
+        self.ContactorStateBlockStatusOutput.setPlainText("0")
+        self.ManualAutomaticStateBlockStatusOutput.setPlainText("0")
+        self.BalancingStateBlockStatusOutput.setPlainText("0")
+        self.BMSOperationsStateBlockStatusOutput.setPlainText("0")
+        self.ChargeControlStatusStateBlockStatusOutput.setPlainText("0")
 
-        # TODO: set default values for all widgets where needed
+        # Pack View tab default values:
+        self.Cell_1_BalancingVoltage.setPlainText("0")
+        self.Cell_2_BalancingVoltage.setPlainText("0")
+        self.Cell_3_BalancingVoltage.setPlainText("0")
+        self.Cell_4_BalancingVoltage.setPlainText("0")
+        self.Cell_5_BalancingVoltage.setPlainText("0")
+        self.Cell_6_BalancingVoltage.setPlainText("0")
+        self.Cell_7_BalancingVoltage.setPlainText("0")
+        self.Cell_8_BalancingVoltage.setPlainText("0")
+        self.Cell_9_BalancingVoltage.setPlainText("0")
+        self.Cell_10_BalancingVoltage.setPlainText("0")
+        self.Cell_11_BalancingVoltage.setPlainText("0")
+        self.Cell_12_BalancingVoltage.setPlainText("0")
+
+        self.Cell_1_BalancingCurrent.setPlainText("0")
+        self.Cell_2_BalancingCurrent.setPlainText("0")
+        self.Cell_3_BalancingCurrent.setPlainText("0")
+        self.Cell_4_BalancingCurrent.setPlainText("0")
+        self.Cell_5_BalancingCurrent.setPlainText("0")
+        self.Cell_6_BalancingCurrent.setPlainText("0")
+        self.Cell_7_BalancingCurrent.setPlainText("0")
+        self.Cell_8_BalancingCurrent.setPlainText("0")
+        self.Cell_9_BalancingCurrent.setPlainText("0")
+        self.Cell_10_BalancingCurrent.setPlainText("0")
+        self.Cell_11_BalancingCurrent.setPlainText("0")
+        self.Cell_12_BalancingCurrent.setPlainText("0")
+
+        self.Cell_1_BalancingTemp.setPlainText("0")
+        self.Cell_2_BalancingTemp.setPlainText("0")
+        self.Cell_3_BalancingTemp.setPlainText("0")
+        self.Cell_4_BalancingTemp.setPlainText("0")
+        self.Cell_5_BalancingTemp.setPlainText("0")
+        self.Cell_6_BalancingTemp.setPlainText("0")
+        self.Cell_7_BalancingTemp.setPlainText("0")
+        self.Cell_8_BalancingTemp.setPlainText("0")
+        self.Cell_9_BalancingTemp.setPlainText("0")
+        self.Cell_10_BalancingTemp.setPlainText("0")
+        self.Cell_11_BalancingTemp.setPlainText("0")
+        self.Cell_12_BalancingTemp.setPlainText("0")
+
+        # Slave Board View tab default values:
+        self.Segment_1_Voltage_2.setPlainText("0")
+        self.Segment_2_Voltage.setPlainText("0")
+        self.Segment_3_Voltage.setPlainText("0")
+        self.Segment_4_Voltage.setPlainText("0")
+        self.Segment_5_Voltage.setPlainText("0")
+        self.Segment_6_Voltage.setPlainText("0")
+        self.Segment_7_Voltage.setPlainText("0")
+        self.Segment_8_Voltage.setPlainText("0")
+        self.Segment_9_Voltage.setPlainText("0")
+        self.Segment_10_Voltage.setPlainText("0")
+        self.Segment_11_Voltage.setPlainText("0")
+        self.Segment_12_Voltage.setPlainText("0")
+        self.Segment_13_Voltage.setPlainText("0")
+        self.Segment_14_Voltage.setPlainText("0")
+        self.Segment_15_Voltage.setPlainText("0")
+        self.Segment_15_Voltage.setPlainText("0")
+
+        self.Segment_1_Temp.setPlainText("0")
+        self.Segment_2_Temp.setPlainText("0")
+        self.Segment_3_Temp.setPlainText("0")
+        self.Segment_4_Temp.setPlainText("0")
+        self.Segment_5_Temp.setPlainText("0")
+        self.Segment_6_Temp.setPlainText("0")
+        self.Segment_7_Temp.setPlainText("0")
+        self.Segment_8_Temp.setPlainText("0")
+        self.Segment_9_Temp.setPlainText("0")
+        self.Segment_10_Temp.setPlainText("0")
+        self.Segment_11_Temp.setPlainText("0")
+        self.Segment_12_Temp.setPlainText("0")
+        self.Segment_13_Temp.setPlainText("0")
+        self.Segment_14_Temp.setPlainText("0")
+        self.Segment_15_Temp.setPlainText("0")
+        self.Segment_16_Temp.setPlainText("0")
 
     # update the GUI according to what is selected from the dropdowns
     def on_cell_dropdown_changed(self):
-        # Get the currently selected item from the combo box
+        # Update your page according to the selected item
         selected_item = self.cellDropDownMenu.currentText()
-        # Update your page according to the selected item
-        current_text = self.CurrentCellNumberBox.toPlainText()
-        self.CurrentCellNumberBox.setPlainText(current_text + selected_item)
+        self.CurrentCellNumberBox.setPlainText(selected_item)
+
     def on_module_dropdown_changed(self):
-        # Get the currently selected item from the combo box
+        # Update your page according to the selected item
         selected_item = self.moduleDropDownMenu.currentText()
-        # Update your page according to the selected item
-        current_text = self.CurrentModuleNumberBox.toPlainText()
-        self.CurrentModuleNumberBox.setPlainText(current_text + selected_item)
+        self.CurrentModuleNumberBox.setPlainText(selected_item)
     def on_slave_dropdown_changed(self):
-        # Get the currently selected item from the combo box
-        selected_item = self.slaveDropDownMenu.currentText()
         # Update your page according to the selected item
-        current_text = self.CurrentSlaveNumberBox.toPlainText()
-        self.CurrentSlaveNumberBox.setPlainText(current_text + selected_item)
+        selected_item = self.slaveDropDownMenu.currentText()
+        self.CurrentSlaveNumberBox.setPlainText(selected_item)
 
     # update the GUI with latest diagnostics read over serial (values read from STM32)
     def handle_data(self, data):
         _translate = QtCore.QCoreApplication.translate
 
         # call the parser to receive module, cell and res of the input string passed over serial from the STM32
-        mod, cell, res = parser(data)
+        p_id, mod, cell, res = parser(data)
 
-        # TODO: Test all of the packet ids
-        # note: If the id is a fault add case statements for each bit in the result and set the error string correctly
-        # faults:
-        # power rail fault - 00000001
-        # comm fault ------- 00000010
-        # overvoltage ------ 00000100
-        # undervoltage ----- 00001000
-        # overtemp --------- 00010000
-        # undertemp -------- 00100000
-        # overcurrent ------ 01000000
-        # undercurrent ----- 10000000
+        # print(res)
 
-        # Iterate over the bits in the fault string
-        # TODO: we also will need to add logic to check the returned cell and make sure it matches with the dropdown menu
-            # TODO: this is so that we can set the fault for the proper cell, module, etc.
+        values = {}  # empty dictionary to store sensor readings according to the module and cell numbers
 
-        # create a dictionary of fault tuples for setting the gui outputs per fault input
-        fault_mapping = {
-            7: (self.PowerRailFaultOutput, self.PowerRailStatusGOOD, self.PowerRailStatusBAD),
-            6: (self.CommFaultOutput, self.CommStatusGOOD, self.CommStatusBAD),
-            5: (self.VoltageFaultOutput, self.VoltageStatusGOOD, self.VoltageStatusBAD),
-            4: (self.VoltageFaultOutput, self.VoltageStatusGOOD, self.VoltageStatusBAD),
-            3: (self.TempFaultOutput, self.TempStatusGOOD_2, self.TempStatusBAD_2),
-            2: (self.TempFaultOutput, self.TempStatusGOOD_2, self.TempStatusBAD_2),
-            1: (self.CurrentFaultOutput, self.CurrentStatusGOOD, self.CurrentStatusBAD),
-            0: (self.CurrentFaultOutput, self.CurrentStatusGOOD, self.CurrentStatusBAD),
-        }
+        # Check if the mod key exists in the cell_values dictionary
+        if mod not in values:
+            # If not, create a new dictionary for the mod key
+            values[mod] = {}
 
-        simultaneous_faults = []
+        # Store the res value for the given cell and mod
+        values[mod][cell] = res
 
-        # indexes the fault_mapping, check if the index is 1
-        for index, (output, status_good, status_bad) in fault_mapping.items():
-            if int(res[index]) == 1:
-                simultaneous_faults.append(index)
+        # cases = {
+        #         1: lambda: code for voltage reading,
+        #         2: lambda: code for current reading ,
+        #         3: lambda: code for temp reading,
+        #         SKIP 4 B/C WE GOT RID OF SOH
+        #         5: lambda: code for SOC,
+        #         6: lambda: code for SOP,
+        #         7: lambda: code for faults,
+        #     }
 
-        # clear the faults
-        for output, status_good, status_bad in fault_mapping.values():
-            output.setPlainText(" ")
-            status_good.setChecked(True)
-            status_bad.setChecked(False)
+        cell_res_values = values.get(mod, {})  # Set default value to an empty dictionary if mod doesn't exist
+        # TODO: can we send voltages, currents, temps, etc., for multiple cells from the c code? (we'd need to edit the main.c)
 
-        # set the gui output boxes according to the fault bits
-        for index in simultaneous_faults:
-            output, status_good, status_bad = fault_mapping[index]
-            output.setPlainText("FAULT")
-            status_good.setChecked(False)
-            status_bad.setChecked(True)
+        # test all packet IDs and update the GUI according to the specified ID value
+        # UPDATE THE VOLTAGE READINGS
+        if p_id == 1:
 
-        # Append data to the existing text
-        current_text = self.CriticalFaultsResultBox.toPlainText()
-        self.CriticalFaultsResultBox.setPlainText(f'{current_text}Module #{mod}, Cell #{cell}, Fault Code: {res}\n')
+            # UPDATES FOR THE CELL VIEW TAB
+            # note: update cell voltage (CellVoltageResultBox) according to the cell selected
+            current_cell = self.CurrentCellNumberBox.toPlainText()
+            # make sure the cell selected displays the cell voltage sent from the reading
+            if current_cell == str(cell):
+                cell_voltage = res
+                self.CellVoltageResultBox.setPlainText(str(cell_voltage))
 
-        # UPDATES FOR THE CELL VIEW TAB
-        # TODO: update measure cell voltage (CellVoltageResultBox) according to the cell selected
-        # NOTE: this is a TEST, i will need to change this output later
-        current_cell = self.CurrentCellNumberBox.toPlainText()
-        if current_cell == "cell 1":
-            self.CellVoltageResultBox.setPlainText("voltage for:" + current_cell)
-        # TODO: update measure cell current (CellCurrentResultBox) according to the cell selected
-        # NOTE: this is a TEST, i will need to change this output later
-        elif current_cell == "cell 2":
-            self.CellVoltageResultBox.setPlainText("voltage for cell:" + current_cell)
-        # TODO: update measure cell temp (CellTempResultBox) according to the cell selected
+            # UPDATES FOR THE PACK VIEW TAB
+            # note: update cell voltage according to the cell selected
+            current_module = self.CurrentModuleNumberBox.toPlainText()
+            if current_module == str(mod):
+                # Retrieve the corresponding res values for the module
+                cell_res_values = values.get(mod, {})  # Set default value to an empty dictionary if mod doesn't exist
+                for cell_num in range(1, 13):  # Assuming cell numbers are from 1 to 12
+                    # Retrieve the corresponding res value for the cell
+                    res_for_cell = cell_res_values.get(cell_num)  # Set default value to None if cell doesn't exist
+                    if res_for_cell is not None:  # Check if res value exists
+                        # Update the GUI for each cell
+                        # Construct the attribute name dynamically based on the cell number
+                        attribute_name = f"Cell_{cell_num}_BalancingVoltage"
+                        # Get the corresponding attribute using getattr
+                        cell_box = getattr(self, attribute_name, None)
+                        # Check if the attribute exists
+                        if cell_box is not None:
+                            # Update the text box value
+                            cell_box.setPlainText(str(res_for_cell))
 
-        # TODO: update the StateOfChargeResult according to the cell selected
-        # TODO: update the StateOfHealthResult according to the cell selected
-        # TODO: update the StateOfPowerResult according to the cell selected
+        # UPDATE THE CURRENT READINGS
+        if p_id == 2:
+
+            # UPDATES FOR THE CELL VIEW TAB
+            # note: update cell current (CellCurrentResultBox) according to the cell selected
+            current_cell = self.CurrentCellNumberBox.toPlainText()
+            # make sure the cell selected displays the cell voltage sent from the reading
+            if current_cell == str(cell):
+                cell_current = res
+                self.CellCurrentResultBox.setPlainText(str(cell_current))
+
+            # UPDATES FOR THE PACK VIEW TAB
+            # note: update cell current according to the cell selected
+            current_module = self.CurrentModuleNumberBox.toPlainText()
+            if current_module == str(mod):
+                # Retrieve the corresponding res values for the module
+                cell_res_values = values.get(mod, {})  # Set default value to an empty dictionary if mod doesn't exist
+                for cell_num in range(1, 13):  # Assuming cell numbers are from 1 to 12
+                    # Retrieve the corresponding res value for the cell
+                    res_for_cell = cell_res_values.get(cell_num)  # Set default value to None if cell doesn't exist
+                    if res_for_cell is not None:  # Check if res value exists
+                        # Update the GUI for each cell
+                        # Construct the attribute name dynamically based on the cell number
+                        attribute_name = f"Cell_{cell_num}_BalancingCurrent"
+                        # Get the corresponding attribute using getattr
+                        cell_box = getattr(self, attribute_name, None)
+                        # Check if the attribute exists
+                        if cell_box is not None:
+                            # Update the text box value
+                            cell_box.setPlainText(str(res_for_cell))
+
+        # UPDATE THE TEMP READINGS
+        if p_id == 3:
+
+            # UPDATES FOR THE CELL VIEW TAB
+            # note: update cell temp (CellTempResultBox) according to the cell selected
+            current_cell = self.CurrentCellNumberBox.toPlainText()
+            # make sure the cell selected displays the cell voltage sent from the reading
+            if current_cell == str(cell):
+                cell_temp = res
+                self.CellTempResultBox.setPlainText(str(cell_temp))
+
+            # UPDATES FOR THE PACK VIEW TAB
+            # note: update cell temp according to the cell selected
+            current_module = self.CurrentModuleNumberBox.toPlainText()
+            if current_module == str(mod):
+                # Retrieve the corresponding res values for the module
+                cell_res_values = values.get(mod, {})  # Set default value to an empty dictionary if mod doesn't exist
+                for cell_num in range(1, 13):  # Assuming cell numbers are from 1 to 12
+                    # Retrieve the corresponding res value for the cell
+                    res_for_cell = cell_res_values.get(cell_num)  # Set default value to None if cell doesn't exist
+                    if res_for_cell is not None:  # Check if res value exists
+                        # Update the GUI for each cell
+                        # Construct the attribute name dynamically based on the cell number
+                        attribute_name = f"Cell_{cell_num}_BalancingTemp"
+                        # Get the corresponding attribute using getattr
+                        cell_box = getattr(self, attribute_name, None)
+                        # Check if the attribute exists
+                        if cell_box is not None:
+                            # Update the text box value
+                            cell_box.setPlainText(str(res_for_cell))
+
+        # TODO: remove SOH result box from the GUI
+
+        # UPDATE THE PREDICTED SOC
+        if p_id == 5:
+
+            # UPDATES FOR THE CELL VIEW TAB
+            # note: update cell SOC (StateOfChargeResult) according to the cell selected
+            current_cell = self.CurrentCellNumberBox.toPlainText()
+            # make sure the cell selected displays the cell voltage sent from the reading
+            if current_cell == str(cell):
+                cell_soc = res
+                self.StateOfChargeResult.setPlainText(str(cell_soc))
+
+        # UPDATE THE CALCULATED SOP
+        if p_id == 6:
+
+            # UPDATES FOR THE CELL VIEW TAB
+            # note: update cell SOP (StateOfPowerResult) according to the cell selected
+            current_cell = self.CurrentCellNumberBox.toPlainText()
+            # make sure the cell selected displays the cell voltage sent from the reading
+            if current_cell == str(cell):
+                cell_sop = res
+                self.StateOfPowerResult.setPlainText(str(cell_sop))
+
+        # UPDATE THE FAULT FLAGS
+        if p_id == 7:
+
+            # update the fault message box
+            # TODO: do we want the fault message to be the binary value, or should we pass a string according to the binary value?
+            current_cell = self.CurrentCellNumberBox.toPlainText()
+            if current_cell == str(cell):
+                self.CriticalFaultsResultBox.setPlainText(f'Cell #{self.cellDropDownMenu.currentText()}, Fault Code: {res}\n')
+            # if current_module == str(mod):
+
+                # faults:
+                # power rail fault - 00000001
+                # comm fault ------- 00000010
+                # overvoltage ------ 00000100
+                # undervoltage ----- 00001000
+                # overtemp --------- 00010000
+                # undertemp -------- 00100000
+                # overcurrent ------ 01000000
+                # undercurrent ----- 10000000
+
+                # Iterate over the bits in the fault string
+                # create a dictionary of fault tuples for setting the gui outputs per fault input
+                fault_mapping = {
+                    7: (self.PowerRailFaultOutput, self.PowerRailStatusGOOD, self.PowerRailStatusBAD),
+                    6: (self.CommFaultOutput, self.CommStatusGOOD, self.CommStatusBAD),
+                    5: (self.VoltageFaultOutput, self.VoltageStatusGOOD, self.VoltageStatusBAD),
+                    4: (self.VoltageFaultOutput, self.VoltageStatusGOOD, self.VoltageStatusBAD),
+                    3: (self.TempFaultOutput, self.TempStatusGOOD_2, self.TempStatusBAD_2),
+                    2: (self.TempFaultOutput, self.TempStatusGOOD_2, self.TempStatusBAD_2),
+                    1: (self.CurrentFaultOutput, self.CurrentStatusGOOD, self.CurrentStatusBAD),
+                    0: (self.CurrentFaultOutput, self.CurrentStatusGOOD, self.CurrentStatusBAD),
+                }
+
+                simultaneous_faults = []
+
+                # indexes the fault_mapping, check if the index is 1
+                for index, (output, status_good, status_bad) in fault_mapping.items():
+                    if int(res[index]) == 1:
+                        simultaneous_faults.append(index)
+
+                # clear the faults
+                for output, status_good, status_bad in fault_mapping.values():
+                    output.setPlainText(" ")
+                    status_good.setChecked(True)
+                    status_bad.setChecked(False)
+
+                # set the gui output boxes according to the fault bits
+                for index in simultaneous_faults:
+                    output, status_good, status_bad = fault_mapping[index]
+                    output.setPlainText("FAULT")
+                    status_good.setChecked(False)
+                    status_bad.setChecked(True)
+
 
         # TODO: update the ContactorStateBlockStatusOutput according to the cell selected
         # TODO: update the ManualAutomaticStateBlockStatusOutput according to the cell selected
         # TODO: update the BalancingStateBlockStatusOutput according to the cell selected
         # TODO: update the BMSOperationsStateBlockStatusOutput according to the cell selected
         # TODO: update the ChargeControlStatusStateBlockStatusOutput according to the cell selected
-
-        # NOTE: the input values will be specific to the cell, so it needs to be in a form which specifies the module, cell, and value
-
-        # UPDATES FOR THE PACK VIEW TAB
-        # TODO: update the (Cell_1_BalancingVoltage-Cell_12_BalancingVoltage) according to the module selected
-        # TODO: update the (Cell_1_BalancingCurrent-Cell_12_BalancingCurrent) according to the module selected
-        # TODO: update the (Cell_1_BalancingTemp-Cell_12_BalancingTemp) according to the module selected
-
-        # NOTE: the input values will be specific to the module, so it needs to be in a form which specifies the module, cell, and value
 
         # UPDATES FOR THE SLAVE BOARD VIEW TAB
         # TODO: update the (Segment_1_Voltage_2-Segment_16_Voltage) according to the slave selected
