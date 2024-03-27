@@ -10,7 +10,6 @@ def parser(data: str):
 
     # remove any characters from data that aren't numeric or '.'
     data = re.sub(r'[^0-9A-Fa-f.]', '', data)
-    # data = re.match(r'^([0-9A-F]+)\.([0-9A-F]+)$', data)
 
     p_id = data[p_id_idx]
     mod = data[mod_idx]
@@ -22,10 +21,10 @@ def parser(data: str):
         cell = hex_map.get(cell.upper())
 
     if p_id == '7':
-        # convert res to binary
+        # if the packet ID indicates a fault, then convert res to binary
         res = format(int(res, 16), '08b')  # returns binary value as a string
     else:
-        # TODO: result needs to be converted to a decimal because the res is being sent as a decimal right now
+        # otherwise, for all other packet IDs, convert res to decimal
         # Split the string into whole and fractional parts
         whole_part, fractional_part = res.split('.')
 
@@ -37,11 +36,8 @@ def parser(data: str):
 
         # Combine whole and fractional parts
         res = whole_decimal + fractional_decimal
-        # print(type(res))
 
-    # print(int(cell, 16))
-
-    print(data)
+    # print(data)
 
     return int(p_id), int(mod), int(cell), res
 

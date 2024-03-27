@@ -1,7 +1,7 @@
 {
     "_allocate_inputs": 4,
     "_allocate_outputs": 4,
-    "cli_parameters": "validate --name network -m C:/Users/LucasTroy/Downloads/soc_lstm.h5 --type keras --compression none --verbosity 1 --workspace C:\\Users\\LUCAST~1\\AppData\\Local\\Temp\\mxAI_workspace11171949702337002373106915046487992 --output C:\\Users\\LucasTroy\\.stm32cubemx\\network_output --allocate-inputs --allocate-outputs --mode stm32 --desc 9600",
+    "cli_parameters": "generate --name network -m C:/Users/14845/Documents/ECE1896/src/python/soc_lstm.h5 --type keras --compression none --verbosity 1 --workspace C:\\Users\\14845\\AppData\\Local\\Temp\\mxAI_workspace14965992813739003516143180888880974 --output C:\\Users\\14845\\.stm32cubemx\\network_output --allocate-inputs --series stm32f4 --allocate-outputs",
     "cli_version": {
         "major": 1,
         "micro": 0,
@@ -13,10 +13,10 @@
         "factor": null,
         "layers": {}
     },
-    "date_time": "Mon Mar 11 19:20:38 2024",
+    "date_time": "Wed Mar 20 21:44:27 2024",
     "error": 0,
     "error_str": [],
-    "exec_cmd": "validate",
+    "exec_cmd": "generate",
     "exec_duration": 0.0,
     "hash": "cfa2c155721d51e6b34add198471acbb",
     "inputs": [
@@ -214,7 +214,7 @@
         }
     ],
     "model_files": [
-        "C:\\Users\\LucasTroy\\Downloads\\soc_lstm.h5"
+        "C:\\Users\\14845\\Documents\\ECE1896\\src\\python\\soc_lstm.h5"
     ],
     "model_n_params": 51417,
     "model_name": "soc_lstm",
@@ -263,20 +263,7 @@
         "micro": 0,
         "minor": 1
     },
-    "val_error": 9.117195531871403e-08,
-    "val_error_desc": "x-cross (l2r) #1",
-    "val_metrics": [
-        {
-            "acc": "n.a.",
-            "cos": 1.0,
-            "desc": "X-cross #1",
-            "l2r": 9.117195531871403e-08,
-            "mae": 1.5497207073167374e-07,
-            "mean": -1.5497207073167374e-07,
-            "nse": 0.9999999999992554,
-            "rmse": 1.80789839987483e-07,
-            "std": 9.814174006805843e-08,
-            "ts_name": "dense_21, ai_float, (1,1), m_id=[4]"
-        }
-    ]
+    "val_error": -1.0,
+    "val_error_desc": "None (None) #-1",
+    "val_metrics": []
 }

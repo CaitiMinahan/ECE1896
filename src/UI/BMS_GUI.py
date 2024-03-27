@@ -148,9 +148,9 @@ class Ui_BMS_Dashboard(QMainWindow):
         self.BalancingStateBlockTitle = QtWidgets.QTextBrowser(self.tab)
         self.BalancingStateBlockTitle.setGeometry(QtCore.QRect(240, 540, 101, 31))
         self.BalancingStateBlockTitle.setObjectName("BalancingStateBlockTitle")
-        self.StateOfHealthBlockTitle = QtWidgets.QTextBrowser(self.tab)
-        self.StateOfHealthBlockTitle.setGeometry(QtCore.QRect(50, 500, 141, 31))
-        self.StateOfHealthBlockTitle.setObjectName("StateOfHealthBlockTitle")
+        # self.StateOfHealthBlockTitle = QtWidgets.QTextBrowser(self.tab)
+        # self.StateOfHealthBlockTitle.setGeometry(QtCore.QRect(50, 500, 141, 31))
+        # self.StateOfHealthBlockTitle.setObjectName("StateOfHealthBlockTitle")
         self.ManualAutomaticStateBlockStatusOutput = QtWidgets.QTextBrowser(self.tab)
         self.ManualAutomaticStateBlockStatusOutput.setGeometry(QtCore.QRect(350, 500, 61, 31))
         self.ManualAutomaticStateBlockStatusOutput.setObjectName("ManualAutomaticStateBlockStatusOutput")
@@ -166,20 +166,20 @@ class Ui_BMS_Dashboard(QMainWindow):
         self.ForceAreaMAIN_5 = QtWidgets.QMdiArea(self.tab)
         self.ForceAreaMAIN_5.setGeometry(QtCore.QRect(230, 410, 191, 261))
         self.ForceAreaMAIN_5.setObjectName("ForceAreaMAIN_5")
-        self.StateOfHealthResult = QtWidgets.QTextBrowser(self.tab)
-        self.StateOfHealthResult.setGeometry(QtCore.QRect(50, 530, 141, 41))
-        self.StateOfHealthResult.setObjectName("StateOfHealthResult")
+        # self.StateOfHealthResult = QtWidgets.QTextBrowser(self.tab)
+        # self.StateOfHealthResult.setGeometry(QtCore.QRect(50, 530, 141, 41))
+        # self.StateOfHealthResult.setObjectName("StateOfHealthResult")
         self.StateOfChargeBlockTitle = QtWidgets.QTextBrowser(self.tab)
-        self.StateOfChargeBlockTitle.setGeometry(QtCore.QRect(50, 420, 141, 31))
+        self.StateOfChargeBlockTitle.setGeometry(QtCore.QRect(50, 430, 141, 31))
         self.StateOfChargeBlockTitle.setObjectName("StateOfChargeBlockTitle")
         self.StateOfPowerBlockTitle = QtWidgets.QTextBrowser(self.tab)
-        self.StateOfPowerBlockTitle.setGeometry(QtCore.QRect(50, 580, 141, 31))
+        self.StateOfPowerBlockTitle.setGeometry(QtCore.QRect(50, 550, 141, 31))
         self.StateOfPowerBlockTitle.setObjectName("StateOfPowerBlockTitle")
         self.SignalMonitoringBlockTitle = QtWidgets.QTextBrowser(self.tab)
         self.SignalMonitoringBlockTitle.setGeometry(QtCore.QRect(10, 380, 211, 31))
         self.SignalMonitoringBlockTitle.setObjectName("SignalMonitoringBlockTitle")
         self.StateOfChargeResult = QtWidgets.QTextBrowser(self.tab)
-        self.StateOfChargeResult.setGeometry(QtCore.QRect(50, 450, 141, 41))
+        self.StateOfChargeResult.setGeometry(QtCore.QRect(50, 460, 141, 61))
         self.StateOfChargeResult.setObjectName("StateOfChargeResult")
         self.BMSOperationsStateBlockTitle = QtWidgets.QTextBrowser(self.tab)
         self.BMSOperationsStateBlockTitle.setGeometry(QtCore.QRect(240, 580, 101, 31))
@@ -188,7 +188,7 @@ class Ui_BMS_Dashboard(QMainWindow):
         self.ContactorStateBlockStatusOutput.setGeometry(QtCore.QRect(350, 460, 61, 31))
         self.ContactorStateBlockStatusOutput.setObjectName("ContactorStateBlockStatusOutput")
         self.StateOfPowerResult = QtWidgets.QTextBrowser(self.tab)
-        self.StateOfPowerResult.setGeometry(QtCore.QRect(50, 610, 141, 41))
+        self.StateOfPowerResult.setGeometry(QtCore.QRect(50, 580, 141, 61))
         self.StateOfPowerResult.setObjectName("StateOfPowerResult")
         self.ContactorStateBlockTitle = QtWidgets.QTextBrowser(self.tab)
         self.ContactorStateBlockTitle.setGeometry(QtCore.QRect(240, 460, 101, 31))
@@ -293,12 +293,12 @@ class Ui_BMS_Dashboard(QMainWindow):
         self.CriticalFaultsBlockTitle.raise_()
         self.ChargeControlStatusStateBlockStatusOutput.raise_()
         self.BalancingStateBlockTitle.raise_()
-        self.StateOfHealthBlockTitle.raise_()
+        # self.StateOfHealthBlockTitle.raise_()
         self.ManualAutomaticStateBlockStatusOutput.raise_()
         self.StateMonitoringBlockTitle.raise_()
         self.BalancingStateBlockStatusOutput.raise_()
         self.BMSOperationsStateBlockStatusOutput.raise_()
-        self.StateOfHealthResult.raise_()
+        # self.StateOfHealthResult.raise_()
         self.StateOfChargeBlockTitle.raise_()
         self.StateOfPowerBlockTitle.raise_()
         self.SignalMonitoringBlockTitle.raise_()
@@ -741,7 +741,7 @@ class Ui_BMS_Dashboard(QMainWindow):
         self.CellTempResultBox.setPlainText("0")
         self.CriticalFaultsResultBox.setPlainText("0")
         self.StateOfChargeResult.setPlainText("0")
-        self.StateOfHealthResult.setPlainText("0")
+        # self.StateOfHealthResult.setPlainText("0")
         self.StateOfPowerResult.setPlainText("0")
         self.ContactorStateBlockStatusOutput.setPlainText("0")
         self.ManualAutomaticStateBlockStatusOutput.setPlainText("0")
@@ -846,9 +846,8 @@ class Ui_BMS_Dashboard(QMainWindow):
         # call the parser to receive module, cell and res of the input string passed over serial from the STM32
         p_id, mod, cell, res = parser(data)
 
-        # print(res)
-
-        values = {}  # empty dictionary to store sensor readings according to the module and cell numbers
+        # empty dictionary to store sensor readings according to the module and cell numbers
+        values = {}
 
         # Check if the mod key exists in the cell_values dictionary
         if mod not in values:
@@ -858,6 +857,7 @@ class Ui_BMS_Dashboard(QMainWindow):
         # Store the res value for the given cell and mod
         values[mod][cell] = res
 
+        # note: test all packet IDs and update the GUI according to the specified ID value
         # cases = {
         #         1: lambda: code for voltage reading,
         #         2: lambda: code for current reading ,
@@ -869,9 +869,7 @@ class Ui_BMS_Dashboard(QMainWindow):
         #     }
 
         cell_res_values = values.get(mod, {})  # Set default value to an empty dictionary if mod doesn't exist
-        # TODO: can we send voltages, currents, temps, etc., for multiple cells from the c code? (we'd need to edit the main.c)
 
-        # test all packet IDs and update the GUI according to the specified ID value
         # UPDATE THE VOLTAGE READINGS
         if p_id == 1:
 
@@ -882,6 +880,8 @@ class Ui_BMS_Dashboard(QMainWindow):
             if current_cell == str(cell):
                 cell_voltage = res
                 self.CellVoltageResultBox.setPlainText(str(cell_voltage))
+            elif current_cell == "Select Cell to View":
+                self.CellVoltageResultBox.setPlainText("0")
 
             # UPDATES FOR THE PACK VIEW TAB
             # note: update cell voltage according to the cell selected
@@ -889,7 +889,7 @@ class Ui_BMS_Dashboard(QMainWindow):
             if current_module == str(mod):
                 # Retrieve the corresponding res values for the module
                 cell_res_values = values.get(mod, {})  # Set default value to an empty dictionary if mod doesn't exist
-                for cell_num in range(1, 13):  # Assuming cell numbers are from 1 to 12
+                for cell_num in range(1, 13):  # loop through cells 1 to 12
                     # Retrieve the corresponding res value for the cell
                     res_for_cell = cell_res_values.get(cell_num)  # Set default value to None if cell doesn't exist
                     if res_for_cell is not None:  # Check if res value exists
@@ -902,6 +902,20 @@ class Ui_BMS_Dashboard(QMainWindow):
                         if cell_box is not None:
                             # Update the text box value
                             cell_box.setPlainText(str(res_for_cell))
+            elif current_module == "Select Module to View":
+                for cell_num in range(1, 13):  # loop through cells 1 to 12
+                    # Retrieve the corresponding res value for the cell
+                    res_for_cell = cell_res_values.get(cell_num)  # Set default value to None if cell doesn't exist
+                    if res_for_cell is not None:  # Check if res value exists
+                        # Update the GUI for each cell
+                        # Construct the attribute name dynamically based on the cell number
+                        attribute_name = f"Cell_{cell_num}_BalancingVoltage"
+                        # Get the corresponding attribute using getattr
+                        cell_box = getattr(self, attribute_name, None)
+                        # Check if the attribute exists
+                        if cell_box is not None:
+                            # Update the text box value
+                            cell_box.setPlainText("0")
 
         # UPDATE THE CURRENT READINGS
         if p_id == 2:
@@ -913,6 +927,8 @@ class Ui_BMS_Dashboard(QMainWindow):
             if current_cell == str(cell):
                 cell_current = res
                 self.CellCurrentResultBox.setPlainText(str(cell_current))
+            elif current_cell == "Select Cell to View":
+                self.CellCurrentResultBox.setPlainText("0")
 
             # UPDATES FOR THE PACK VIEW TAB
             # note: update cell current according to the cell selected
@@ -920,7 +936,7 @@ class Ui_BMS_Dashboard(QMainWindow):
             if current_module == str(mod):
                 # Retrieve the corresponding res values for the module
                 cell_res_values = values.get(mod, {})  # Set default value to an empty dictionary if mod doesn't exist
-                for cell_num in range(1, 13):  # Assuming cell numbers are from 1 to 12
+                for cell_num in range(1, 13):  # loop through cells 1 to 12
                     # Retrieve the corresponding res value for the cell
                     res_for_cell = cell_res_values.get(cell_num)  # Set default value to None if cell doesn't exist
                     if res_for_cell is not None:  # Check if res value exists
@@ -933,6 +949,20 @@ class Ui_BMS_Dashboard(QMainWindow):
                         if cell_box is not None:
                             # Update the text box value
                             cell_box.setPlainText(str(res_for_cell))
+            elif current_module == "Select Module to View":
+                for cell_num in range(1, 13):  # loop through cells 1 to 12
+                    # Retrieve the corresponding res value for the cell
+                    res_for_cell = cell_res_values.get(cell_num)  # Set default value to None if cell doesn't exist
+                    if res_for_cell is not None:  # Check if res value exists
+                        # Update the GUI for each cell
+                        # Construct the attribute name dynamically based on the cell number
+                        attribute_name = f"Cell_{cell_num}_BalancingCurrent"
+                        # Get the corresponding attribute using getattr
+                        cell_box = getattr(self, attribute_name, None)
+                        # Check if the attribute exists
+                        if cell_box is not None:
+                            # Update the text box value
+                            cell_box.setPlainText("0")
 
         # UPDATE THE TEMP READINGS
         if p_id == 3:
@@ -944,6 +974,8 @@ class Ui_BMS_Dashboard(QMainWindow):
             if current_cell == str(cell):
                 cell_temp = res
                 self.CellTempResultBox.setPlainText(str(cell_temp))
+            elif current_cell == "Select Cell to View":
+                self.CellTempResultBox.setPlainText("0")
 
             # UPDATES FOR THE PACK VIEW TAB
             # note: update cell temp according to the cell selected
@@ -951,7 +983,7 @@ class Ui_BMS_Dashboard(QMainWindow):
             if current_module == str(mod):
                 # Retrieve the corresponding res values for the module
                 cell_res_values = values.get(mod, {})  # Set default value to an empty dictionary if mod doesn't exist
-                for cell_num in range(1, 13):  # Assuming cell numbers are from 1 to 12
+                for cell_num in range(1, 13):  # loop through cells 1 to 12
                     # Retrieve the corresponding res value for the cell
                     res_for_cell = cell_res_values.get(cell_num)  # Set default value to None if cell doesn't exist
                     if res_for_cell is not None:  # Check if res value exists
@@ -964,8 +996,20 @@ class Ui_BMS_Dashboard(QMainWindow):
                         if cell_box is not None:
                             # Update the text box value
                             cell_box.setPlainText(str(res_for_cell))
-
-        # TODO: remove SOH result box from the GUI
+            elif current_module == "Select Module to View":
+                for cell_num in range(1, 13):  # loop through cells 1 to 12
+                    # Retrieve the corresponding res value for the cell
+                    res_for_cell = cell_res_values.get(cell_num)  # Set default value to None if cell doesn't exist
+                    if res_for_cell is not None:  # Check if res value exists
+                        # Update the GUI for each cell
+                        # Construct the attribute name dynamically based on the cell number
+                        attribute_name = f"Cell_{cell_num}_BalancingTemp"
+                        # Get the corresponding attribute using getattr
+                        cell_box = getattr(self, attribute_name, None)
+                        # Check if the attribute exists
+                        if cell_box is not None:
+                            # Update the text box value
+                            cell_box.setPlainText("0")
 
         # UPDATE THE PREDICTED SOC
         if p_id == 5:
@@ -977,6 +1021,8 @@ class Ui_BMS_Dashboard(QMainWindow):
             if current_cell == str(cell):
                 cell_soc = res
                 self.StateOfChargeResult.setPlainText(str(cell_soc))
+            elif current_cell == "Select Cell to View":
+                self.StateOfChargeResult.setPlainText("0")
 
         # UPDATE THE CALCULATED SOP
         if p_id == 6:
@@ -988,28 +1034,52 @@ class Ui_BMS_Dashboard(QMainWindow):
             if current_cell == str(cell):
                 cell_sop = res
                 self.StateOfPowerResult.setPlainText(str(cell_sop))
+            elif current_cell == "Select Cell to View":
+                self.StateOfPowerResult.setPlainText("0")
 
         # UPDATE THE FAULT FLAGS
         if p_id == 7:
 
+            # faults:
+            # power rail fault - 00000001
+            # comm fault ------- 00000010
+            # overvoltage ------ 00000100
+            # undervoltage ----- 00001000
+            # overtemp --------- 00010000
+            # undertemp -------- 00100000
+            # overcurrent ------ 01000000
+            # undercurrent ----- 10000000
+
+            # set the fault message according to the fault code we get from res
+            fault_msg = ""
+
+            if res == '00000001':
+                res = "power rail fault"
+            elif res == '00000010':
+                fault_msg = "communications fault"
+            elif res == '00000100':
+                fault_msg = "overvoltage"
+            elif res == '00001000':
+                fault_msg = "undervoltage"
+            elif res == '00010000':
+                fault_msg = "overtemp"
+            elif res == '00100000':
+                fault_msg = "undertemp"
+            elif res == '01000000':
+                fault_msg = "overcurrent"
+            elif res == '10000000':
+                fault_msg = "undercurrent"
+            else:
+                fault_msg = ""
+
             # update the fault message box
-            # TODO: do we want the fault message to be the binary value, or should we pass a string according to the binary value?
             current_cell = self.CurrentCellNumberBox.toPlainText()
             if current_cell == str(cell):
-                self.CriticalFaultsResultBox.setPlainText(f'Cell #{self.cellDropDownMenu.currentText()}, Fault Code: {res}\n')
-            # if current_module == str(mod):
+                self.CriticalFaultsResultBox.setPlainText(f'Cell #{self.cellDropDownMenu.currentText()}, Fault Code: {fault_msg}\n')
+            # if current_module == str(mod):  add this if we want to consider the module number later
+            #     self.CriticalFaultsResultBox.setPlainText(f'Module #{self.moduleDropDownMenu.currentText()}, Cell #{self.cellDropDownMenu.currentText()}, Fault Code: {res}\n')
 
-                # faults:
-                # power rail fault - 00000001
-                # comm fault ------- 00000010
-                # overvoltage ------ 00000100
-                # undervoltage ----- 00001000
-                # overtemp --------- 00010000
-                # undertemp -------- 00100000
-                # overcurrent ------ 01000000
-                # undercurrent ----- 10000000
-
-                # Iterate over the bits in the fault string
+                # Iterate over the bits in the fault string to update the fault check boxes
                 # create a dictionary of fault tuples for setting the gui outputs per fault input
                 fault_mapping = {
                     7: (self.PowerRailFaultOutput, self.PowerRailStatusGOOD, self.PowerRailStatusBAD),
@@ -1041,6 +1111,9 @@ class Ui_BMS_Dashboard(QMainWindow):
                     output.setPlainText("FAULT")
                     status_good.setChecked(False)
                     status_bad.setChecked(True)
+
+            elif current_cell == "Select Cell to View":
+                self.CriticalFaultsResultBox.setPlainText("")
 
 
         # TODO: update the ContactorStateBlockStatusOutput according to the cell selected
@@ -1120,11 +1193,11 @@ class Ui_BMS_Dashboard(QMainWindow):
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Segoe UI Emoji,sans-serif\'; font-size:8pt;\">Balancing State</span></p></body></html>"))
-        self.StateOfHealthBlockTitle.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-"p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
-"<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Segoe UI Emoji,sans-serif\'; font-size:9pt;\">State of Health</span></p></body></html>"))
+#         self.StateOfHealthBlockTitle.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+# "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+# "p, li { white-space: pre-wrap; }\n"
+# "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+# "<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Segoe UI Emoji,sans-serif\'; font-size:9pt;\">State of Health</span></p></body></html>"))
         self.ManualAutomaticStateBlockStatusOutput.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
@@ -1145,11 +1218,11 @@ class Ui_BMS_Dashboard(QMainWindow):
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
-        self.StateOfHealthResult.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-"p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
+#         self.StateOfHealthResult.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+# "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+# "p, li { white-space: pre-wrap; }\n"
+# "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+# "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt;\"><br /></p></body></html>"))
         self.StateOfChargeBlockTitle.setHtml(_translate("BMS_Dashboard", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"

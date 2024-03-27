@@ -3,9 +3,13 @@
     "c_layers": [
         {
             "next": "lstm_21",
+            "rom": 43000,
             "op_by_type": {"smul_f32_f32": 10650},
             "c_forward": "forward_lstm",
+            "c_code_emit": true,
             "macc": 10650,
+            "name": "lstm_20",
+            "c_id": 0,
             "tensors": {
                 "outputs": ["lstm_20_output0"],
                 "inputs": ["input_0_output"],
@@ -17,30 +21,23 @@
                     "lstm_20_bias"
                 ]
             },
-            "layer_type": "lstm",
-            "rom": 43000,
-            "c_code_emit": true,
-            "exec_time": {
-                "duration_ms": 0.9053355574607849,
-                "counters": [162960],
-                "percentage": 24.43768063879402,
-                "cycles_by_macc": 15.301408450704225,
-                "cycles": 162960
-            },
-            "name": "lstm_20",
-            "c_id": 0,
             "weight_sparsity": [
                 0.013953488372092981,
                 10750,
                 150
             ],
+            "layer_type": "lstm",
             "m_id": 0
         },
         {
             "next": "lstm_22",
+            "rom": 81400,
             "op_by_type": {"smul_f32_f32": 20250},
             "c_forward": "forward_lstm",
+            "c_code_emit": true,
             "macc": 20250,
+            "name": "lstm_21",
+            "c_id": 1,
             "tensors": {
                 "outputs": ["lstm_21_output0"],
                 "inputs": ["lstm_20_output0"],
@@ -52,30 +49,23 @@
                     "lstm_21_bias"
                 ]
             },
-            "layer_type": "lstm",
-            "rom": 81400,
-            "c_code_emit": true,
-            "exec_time": {
-                "duration_ms": 1.3740272045135498,
-                "counters": [247324],
-                "percentage": 37.08905249131508,
-                "cycles_by_macc": 12.21353086419753,
-                "cycles": 247324
-            },
-            "name": "lstm_21",
-            "c_id": 1,
             "weight_sparsity": [
                 0.0073710073710073765,
                 20350,
                 150
             ],
+            "layer_type": "lstm",
             "m_id": 1
         },
         {
             "next": "dense_20_dense",
+            "rom": 81400,
             "op_by_type": {"smul_f32_f32": 20250},
             "c_forward": "forward_lstm",
+            "c_code_emit": true,
             "macc": 20250,
+            "name": "lstm_22",
+            "c_id": 2,
             "tensors": {
                 "outputs": ["lstm_22_output0"],
                 "inputs": ["lstm_21_output0"],
@@ -87,30 +77,23 @@
                     "lstm_22_bias"
                 ]
             },
-            "layer_type": "lstm",
-            "rom": 81400,
-            "c_code_emit": true,
-            "exec_time": {
-                "duration_ms": 1.394380009174347,
-                "counters": [250988],
-                "percentage": 37.638434801890966,
-                "cycles_by_macc": 12.394469135802469,
-                "cycles": 250988
-            },
-            "name": "lstm_22",
-            "c_id": 2,
             "weight_sparsity": [
                 0.0073710073710073765,
                 20350,
                 150
             ],
+            "layer_type": "lstm",
             "m_id": 2
         },
         {
             "next": "dense_20",
+            "rom": 1632,
             "op_by_type": {"smul_f32_f32": 408},
             "c_forward": "forward_dense",
+            "c_code_emit": true,
             "macc": 408,
+            "name": "dense_20_dense",
+            "c_id": 3,
             "tensors": {
                 "outputs": ["dense_20_dense_output"],
                 "inputs": ["lstm_22_output0"],
@@ -120,60 +103,46 @@
                     "dense_20_dense_bias"
                 ]
             },
-            "layer_type": "dense",
-            "rom": 1632,
-            "c_code_emit": true,
-            "exec_time": {
-                "duration_ms": 0.022883333265781403,
-                "counters": [4119],
-                "percentage": 0.6176887516366881,
-                "cycles_by_macc": 10.093137254901961,
-                "cycles": 4118
-            },
-            "name": "dense_20_dense",
-            "c_id": 3,
             "weight_sparsity": [
                 0,
                 408,
                 0
             ],
+            "layer_type": "dense",
             "m_id": 3
         },
         {
             "next": "dense_21_dense",
+            "rom": 0,
             "op_by_type": {"op_f32_f32": 8},
             "c_forward": "forward_relu",
+            "c_code_emit": true,
             "macc": 8,
+            "name": "dense_20",
+            "c_id": 4,
             "tensors": {
                 "outputs": ["dense_20_output"],
                 "inputs": ["dense_20_dense_output"],
                 "scratchs": [],
                 "weights": []
             },
-            "layer_type": "nl",
-            "rom": 0,
-            "c_code_emit": true,
-            "exec_time": {
-                "duration_ms": 0.0023388888221234083,
-                "counters": [421],
-                "percentage": 0.06313351730601033,
-                "cycles_by_macc": 52.5,
-                "cycles": 420
-            },
-            "name": "dense_20",
-            "c_id": 4,
             "weight_sparsity": [
                 0,
                 1,
                 0
             ],
+            "layer_type": "nl",
             "m_id": 3
         },
         {
             "next": "dense_21",
+            "rom": 36,
             "op_by_type": {"smul_f32_f32": 9},
             "c_forward": "forward_dense",
+            "c_code_emit": true,
             "macc": 9,
+            "name": "dense_21_dense",
+            "c_id": 5,
             "tensors": {
                 "outputs": ["dense_21_dense_output"],
                 "inputs": ["dense_20_output"],
@@ -183,53 +152,35 @@
                     "dense_21_dense_bias"
                 ]
             },
-            "layer_type": "dense",
-            "rom": 36,
-            "c_code_emit": true,
-            "exec_time": {
-                "duration_ms": 0.003816666780039668,
-                "counters": [687],
-                "percentage": 0.10302310906345218,
-                "cycles_by_macc": 76.33333333333333,
-                "cycles": 687
-            },
-            "name": "dense_21_dense",
-            "c_id": 5,
             "weight_sparsity": [
                 0,
                 9,
                 0
             ],
+            "layer_type": "dense",
             "m_id": 4
         },
         {
             "next": "dense_21",
+            "rom": 0,
             "op_by_type": {"op_f32_f32": 1},
             "c_forward": "forward_relu",
+            "c_code_emit": true,
             "macc": 1,
+            "name": "dense_21",
+            "c_id": 6,
             "tensors": {
                 "outputs": ["dense_21_output"],
                 "inputs": ["dense_21_dense_output"],
                 "scratchs": [],
                 "weights": []
             },
-            "layer_type": "nl",
-            "rom": 0,
-            "c_code_emit": true,
-            "exec_time": {
-                "duration_ms": 0.0018888888880610466,
-                "counters": [340],
-                "percentage": 0.05098668999378394,
-                "cycles_by_macc": 339,
-                "cycles": 339
-            },
-            "name": "dense_21",
-            "c_id": 6,
             "weight_sparsity": [
                 0,
                 1,
                 0
             ],
+            "layer_type": "nl",
             "m_id": 4
         }
     ],
@@ -839,7 +790,7 @@
         }
     ],
     "c_activations_count": 1,
-    "date_time": "Mon Mar 11 19:20:38 2024",
+    "date_time": "Wed Mar 20 21:44:27 2024",
     "model_name": "soc_lstm",
     "tool_version": {
         "major": 1,
@@ -857,7 +808,10 @@
     "c_weights_count": 1,
     "weights": {"weights_array": {
         "buffer_data_size": 206268,
+        "buffer_crc": 0,
         "pool_size": 206268,
+        "buffer_c_type": "u64",
+        "buffer_c_name": "s_network_weights_array_u64",
         "buffer_offsets": [
             {
                 "lite_tag": null,
@@ -958,7 +912,10 @@
                 "buffer_name": "dense_20_dense_weights_array"
             }
         ],
-        "pool_id": 0
+        "buffer_c_name_addr": "s_network_weights_array_u64",
+        "buffer_c_count": 25784,
+        "pool_id": 0,
+        "buffer_c_data": []
     }},
     "memory_footprint": {
         "kernel_ram": 3208,
@@ -1065,12 +1022,6 @@
         "buffer_c_name_addr": "NULL",
         "pool_id": 0
     }},
-    "exec_time": {
-        "duration_ms": 3.704670548904687,
-        "cycles_by_macc": 12.92928297663339,
-        "cycles": 666840,
-        "device": "0x421 - STM32F446 @180/180MHz fpu,art_lat=5,art_prefetch,art_icache,art_dcache"
-    },
     "c_arrays_n": 25,
     "c_name": "network",
     "memory_pools": []

@@ -87,6 +87,7 @@
 #define TSREF_ADC				5	  // Reference voltage for thermistor
 #define TS_R1					10000 // Reference series resistance for themistor
 
+// TODO: Remove 3 and replace with comment
 const int8_t PRE_CHG_PACK_VOLT = 3; //SERIES_MOD * SERIES_CELL * MAX_VOLT;
 const float known_resistance = 220.0; //10000.0;  // series resistance in Ohms for thermistor
 
@@ -231,6 +232,7 @@ CAN_HandleTypeDef hcan1;
 CRC_HandleTypeDef hcrc;
 
 UART_HandleTypeDef huart2;
+UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN PV */
 ai_handle network;
@@ -248,6 +250,7 @@ static void MX_DMA_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_CAN1_Init(void);
 static void MX_CRC_Init(void);
+static void MX_USART3_UART_Init(void);
 /* USER CODE BEGIN PFP */
 static void AI_Init(void);
 static void AI_Run(float *pIn, float *pOut);
@@ -275,6 +278,16 @@ float soc; 					 // State of Charge
 float sop; 					 // State of Power
 
 int startupSequence(void){
+	//
+	// BMS Wakeup - Done in UART3
+	//
+
+    // TODO: Implement Auto Addressing
+	// Write Control1[SEND_WAKE] = 1 to BQ79600-Q1
+
+	// Wait 11.6ms * SERIES_MOD
+
+	// Do Auto-Addressing
 
 	//
 	// Negative Contactor Enable
@@ -284,20 +297,20 @@ int startupSequence(void){
 	HAL_GPIO_WritePin(NEG_LSD_OUTPUT_GPIO, NEG_LSD_OUTPUT_PIN, 1);
 
 	// Read NEG_LSD_INPUT
-		// If high, proceed, else EPO/return -1
-		if (!HAL_GPIO_ReadPin(NEG_LSD_INPUT_GPIO, NEG_LSD_INPUT_PIN)){ return -1; }
+    // If high, proceed, else EPO/return -1
+    if (!HAL_GPIO_ReadPin(NEG_LSD_INPUT_GPIO, NEG_LSD_INPUT_PIN)){ return -1; }
 
 
 	// Send high Signal to NEG_HSD_OUTPUT
 	HAL_GPIO_WritePin(NEG_HSD_OUTPUT_GPIO, NEG_HSD_OUTPUT_PIN, 1);
 
 	// Read NEG_HSD_INPUT
-		// If high, proceed, else EPO/return -1
-		if (!HAL_GPIO_ReadPin(NEG_LSD_INPUT_GPIO, NEG_LSD_INPUT_PIN)){ return -1; }
+    // If high, proceed, else EPO/return -1
+    if (!HAL_GPIO_ReadPin(NEG_LSD_INPUT_GPIO, NEG_LSD_INPUT_PIN)){ return -1; }
 
 	// Read NEG_CON_OUTPUT
-		// If connected (low for nand, high for and, between HSD and LSD), proceed, else EPO/return -1
-		if (HAL_GPIO_ReadPin(NEG_CON_INPUT_GPIO, NEG_CON_INPUT_PIN)){ return -1; }
+    // If connected (low for nand, high for and, between HSD and LSD), proceed, else EPO/return -1
+    if (HAL_GPIO_ReadPin(NEG_CON_INPUT_GPIO, NEG_CON_INPUT_PIN)){ return -1; }
 
 	//
 	// Pre Charge Contactor Enable
@@ -307,46 +320,46 @@ int startupSequence(void){
 	HAL_GPIO_WritePin(PRE_LSD_OUTPUT_GPIO, PRE_LSD_OUTPUT_PIN, 1);
 
 	// Read PRE_LSD_INPUT
-		// If high, proceed, else EPO/return -1
-		if (!HAL_GPIO_ReadPin(PRE_LSD_INPUT_GPIO, PRE_LSD_INPUT_PIN)){ return -1; }
+    // If high, proceed, else EPO/return -1
+    if (!HAL_GPIO_ReadPin(PRE_LSD_INPUT_GPIO, PRE_LSD_INPUT_PIN)){ return -1; }
 
 	// Send high Signal to PRE_HSD_OUTPUT
 	HAL_GPIO_WritePin(PRE_HSD_OUTPUT_GPIO, PRE_HSD_OUTPUT_PIN, 1);
 
 	// Read PRE_HSD_INPUT
-		// If high, proceed, else EPO/return -1
-		if (!HAL_GPIO_ReadPin(PRE_HSD_INPUT_GPIO, PRE_HSD_INPUT_PIN)){ return -1; }
+    // If high, proceed, else EPO/return -1
+    if (!HAL_GPIO_ReadPin(PRE_HSD_INPUT_GPIO, PRE_HSD_INPUT_PIN)){ return -1; }
 
 	// Read PRE_CON_OUTPUT
-		// If connected (low for nand, high for and, between HSD and LSD), proceed, else EPO/return 0
-		if (HAL_GPIO_ReadPin(PRE_CON_INPUT_GPIO, PRE_CON_INPUT_PIN)){ return -1; }
+    // If connected (low for nand, high for and, between HSD and LSD), proceed, else EPO/return 0
+    if (HAL_GPIO_ReadPin(PRE_CON_INPUT_GPIO, PRE_CON_INPUT_PIN)){ return -1; }
 
 	// Read voltage at ANALOG_INPUT
-		// If 90% of pack voltage after time t proceed, else EPO/return -1
-		while (pre_charge_voltage < PRE_CHG_PACK_VOLT) {
-		    HAL_ADC_Start_DMA(&hadc1,(uint32_t *) cell_analog_values, 3); // Start Analog to Digital conversion
-		    HAL_ADC_PollForConversion(&hadc1, 1000);					 // Poll Value Read
-		    pre_charge_voltage = (float)cell_analog_values[0]/1000;   // Store Value in (mV) form (V)
+    // If 90% of pack voltage after time t proceed, else EPO/return -1
+    while (pre_charge_voltage < PRE_CHG_PACK_VOLT) {
+        HAL_ADC_Start_DMA(&hadc1,(uint32_t *) cell_analog_values, 3); // Start Analog to Digital conversion
+        HAL_ADC_PollForConversion(&hadc1, 1000);					 // Poll Value Read
+        pre_charge_voltage = (float)cell_analog_values[0]/1000;   // Store Value in (mV) form (V)
 
-		    // Convert the integer part to a hexadecimal string
-		    uint16_t intPart = (uint16_t)pre_charge_voltage;
-		    char IntPartStr[3];
-		    sprintf(IntPartStr, "%02X", intPart);
+        // Convert the integer part to a hexadecimal string
+        uint16_t intPart = (uint16_t)pre_charge_voltage;
+        char IntPartStr[3];
+        sprintf(IntPartStr, "%02X", intPart);
 
-		    // Convert the fractional part to a hexadecimal string
-		    uint16_t fracPart = (uint16_t)((pre_charge_voltage - intPart) * 100);
-		    char FracPartStr[3];
-		    sprintf(FracPartStr, "%02X", fracPart);
+        // Convert the fractional part to a hexadecimal string
+        uint16_t fracPart = (uint16_t)((pre_charge_voltage - intPart) * 100);
+        char FracPartStr[3];
+        sprintf(FracPartStr, "%02X", fracPart);
 
-		    // Write to UART Over Temp Fault in the desired format
-		    char ResultStr[8];
-		    sprintf(ResultStr, "%s.%s\r\n", IntPartStr, FracPartStr);
-		    HAL_UART_Transmit(&huart2, (uint8_t*)ResultStr, sizeof(ResultStr), 100);
+        // Write to UART Over Temp Fault in the desired format
+        char ResultStr[8];
+        sprintf(ResultStr, "%s.%s\r\n", IntPartStr, FracPartStr);
+        HAL_UART_Transmit(&huart2, (uint8_t*)ResultStr, sizeof(ResultStr), 100);
 
 
-		    // Delay for debug
-		    HAL_Delay(1000);
-		}
+        // Delay for debug
+        HAL_Delay(1000);
+    }
 
 	//
 	// Positive Contactor Enable
@@ -356,19 +369,19 @@ int startupSequence(void){
 	HAL_GPIO_WritePin(POS_LSD_OUTPUT_GPIO, POS_LSD_OUTPUT_PIN, 1);
 
 	// Read POS_LSD_INPUT
-		// If high, proceed, else EPO/return -1
-		if (!HAL_GPIO_ReadPin(POS_LSD_INPUT_GPIO, POS_LSD_INPUT_PIN)){ return -1; }
+    // If high, proceed, else EPO/return -1
+    if (!HAL_GPIO_ReadPin(POS_LSD_INPUT_GPIO, POS_LSD_INPUT_PIN)){ return -1; }
 
 	// Send high Signal to POS_HSD_OUTPUT
 	HAL_GPIO_WritePin(POS_HSD_OUTPUT_GPIO, POS_HSD_OUTPUT_PIN, 1);
 
 	// Read POS_HSD_INPUT
-		// If high, proceed, else EPO/return -1
-		if (!HAL_GPIO_ReadPin(POS_HSD_INPUT_GPIO, POS_HSD_INPUT_PIN)){ return -1; }
+    // If high, proceed, else EPO/return -1
+    if (!HAL_GPIO_ReadPin(POS_HSD_INPUT_GPIO, POS_HSD_INPUT_PIN)){ return -1; }
 
 	// Read POS_CON_OUTPUT
-		// If connected (low for nand, high for and, between HSD and LSD), proceed, else EPO/return 0
-		if (HAL_GPIO_ReadPin(POS_CON_INPUT_GPIO, POS_CON_INPUT_PIN)){ return -1; }
+    // If connected (low for nand, high for and, between HSD and LSD), proceed, else EPO/return 0
+    if (HAL_GPIO_ReadPin(POS_CON_INPUT_GPIO, POS_CON_INPUT_PIN)){ return -1; }
 
 	//
 	// Pre Charge Contactor Disable
@@ -378,19 +391,19 @@ int startupSequence(void){
 	HAL_GPIO_WritePin(PRE_HSD_OUTPUT_GPIO, PRE_HSD_OUTPUT_PIN, 0);
 
 	// Read PRE_HSD_INPUT
-		// If low, proceed, else EPO/return -1
-		if (HAL_GPIO_ReadPin(PRE_HSD_INPUT_GPIO, PRE_HSD_INPUT_PIN)){ return -1; }
+    // If low, proceed, else EPO/return -1
+    if (HAL_GPIO_ReadPin(PRE_HSD_INPUT_GPIO, PRE_HSD_INPUT_PIN)){ return -1; }
 
 	// Send low Signal to PRE_LSD_OUTPUT
 	HAL_GPIO_WritePin(PRE_LSD_OUTPUT_GPIO, PRE_LSD_OUTPUT_PIN, 0);
 
 	// Read PRE_LSD_INPUT
-		// If low, proceed, else EPO/return -1
-		if (HAL_GPIO_ReadPin(PRE_LSD_INPUT_GPIO, PRE_LSD_INPUT_PIN)){ return -1; }
+    // If low, proceed, else EPO/return -1
+    if (HAL_GPIO_ReadPin(PRE_LSD_INPUT_GPIO, PRE_LSD_INPUT_PIN)){ return -1; }
 
 	// Read PRE_CON_OUTPUT
-		// If connected (low for nand, high for and, between HSD and LSD), proceed, else EPO/return 0
-		if (!HAL_GPIO_ReadPin(PRE_CON_INPUT_GPIO, PRE_CON_INPUT_PIN)){ return -1; }
+    // If connected (low for nand, high for and, between HSD and LSD), proceed, else EPO/return 0
+    if (!HAL_GPIO_ReadPin(PRE_CON_INPUT_GPIO, PRE_CON_INPUT_PIN)){ return -1; }
 
 	// Start-up Sequence Concluded Successfully
 	return 0;
@@ -539,18 +552,12 @@ int main(void)
   uint16_t Fault;
 
   // Define the Cells
-  Cell cell1 = initCellDefaults(1, 1);
-  Cell cell2 = initCellDefaults(1, 2);
-  Cell cell3 = initCellDefaults(1, 3);
-  Cell cell4 = initCellDefaults(1, 4);
-  Cell cell5 = initCellDefaults(1, 5);
-  Cell cell6 = initCellDefaults(1, 6);
-  Cell cell7 = initCellDefaults(1, 7);
-  Cell cell8 = initCellDefaults(1, 8);
-  Cell cell9 = initCellDefaults(1, 9);
-  Cell cell10 = initCellDefaults(1, 10);
-  Cell cell11 = initCellDefaults(1, 11);
-  Cell cell12 = initCellDefaults(1, 12);
+    Cell module1[SERIES_CELL]; // Define more modules here
+    for (int i = 0; i < SERIES_MOD; i++){
+        for (int i = 0; i < SERIES_CELL; i++) {
+            module1[i] = initCellDefaults(1, i + 1);
+        }
+    }
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -566,6 +573,7 @@ int main(void)
   MX_ADC1_Init();
   MX_CAN1_Init();
   MX_CRC_Init();
+  MX_USART3_UART_Init();
   MX_X_CUBE_AI_Init();
   /* USER CODE BEGIN 2 */
   // Start Ai Inference Model
@@ -588,9 +596,13 @@ int main(void)
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, 0);
 
   int success;
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);
+  HAL_Delay(1000);
   success = startupSequence();
 
   if (success == -1) { HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, 1); }
+
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -600,22 +612,12 @@ int main(void)
   {
     /* USER CODE END WHILE */
 
-    // MX_X_CUBE_AI_Process();
+//  MX_X_CUBE_AI_Process();
     /* USER CODE BEGIN 3 */
-
-	  // TODO: loop through every cell in the pack for every module
-	  checkStatusTransmit(&cell1);
-	  checkStatusTransmit(&cell2);
-	  checkStatusTransmit(&cell3);
-	  checkStatusTransmit(&cell4);
-	  checkStatusTransmit(&cell5);
-	  checkStatusTransmit(&cell6);
-	  checkStatusTransmit(&cell7);
-	  checkStatusTransmit(&cell8);
-	  checkStatusTransmit(&cell9);
-	  checkStatusTransmit(&cell10);
-	  checkStatusTransmit(&cell11);
-	  checkStatusTransmit(&cell12);
+      // Loop through every cell in the pack for every module
+	  for (int i = 0; i < sizeof(module1) / sizeof(module1[0]); i++){
+          checkStatusTransmit(&module1[i]);
+      }
 
 	  if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_9) && !HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_8)){
 		  // Turn ON LED
@@ -623,10 +625,10 @@ int main(void)
 		  HAL_Delay(100);
 
 		  // Set the Cell Over Temp Fault
-		  setCellFaults(&cell1, OVER_TEMP_FAULT);
+		  setCellFaults(&module1[0], OVER_TEMP_FAULT);
 
 		  // Get the Cell Over Temp Fault
-		  Fault = getCellFaults(&cell1);
+		  Fault = getCellFaults(&module1[0]);
 
 		  // Convert the result to a hexadecimal string
 		  char FaultStr[6]; // Buffer to hold the result string
@@ -636,7 +638,7 @@ int main(void)
 		  HAL_CAN_AddTxMessage(&hcan1, &TxHeader, FaultStr, &TxMailbox);
 
 		  // Clear the Cell Over Current Fault
-		  clearCellFault(&cell1, OVER_CURRENT_FAULT);
+		  clearCellFault(&module1[0], OVER_CURRENT_FAULT);
 
 		  // Turn OFF LED
 		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, 0);
@@ -648,10 +650,10 @@ int main(void)
 		  HAL_Delay(100);
 
 		  // Set the Cell Over Current Fault
-		  setCellFaults(&cell1, OVER_CURRENT_FAULT);
+		  setCellFaults(&module1[0], OVER_CURRENT_FAULT);
 
 		  // Get the Cell Over Current Fault
-		  Fault = getCellFaults(&cell1);
+		  Fault = getCellFaults(&module1[0]);
 
 		  // Convert the result to a hexadecimal string
 		  char FaultStr[6]; // Buffer to hold the result string
@@ -661,13 +663,11 @@ int main(void)
 		  HAL_CAN_AddTxMessage(&hcan1, &TxHeader, FaultStr, &TxMailbox);
 
 		  // Clear the Cell Over Temp Fault
-		  clearCellFault(&cell1, OVER_TEMP_FAULT);
+		  clearCellFault(&module1[0], OVER_TEMP_FAULT);
 
 		  // Turn OFF LED
 		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, 0);
 	  }
-
-//	  HAL_Delay(1000);
   }
   /* USER CODE END 3 */
 }
@@ -906,6 +906,52 @@ void MX_USART2_UART_Init(void)
 }
 
 /**
+  * @brief USART3 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART3_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART3_Init 0 */
+    // Send a low signal to wake up BMS
+   	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET);
+
+	// Delay 2.75ms
+	HAL_Delay(2.75);
+
+	// Send high signal
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);
+
+	// Delay at least 3.5ms
+	HAL_Delay(4);
+
+	//Drop GPIO low to not interfere with UART
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET);
+  /* USER CODE END USART3_Init 0 */
+
+  /* USER CODE BEGIN USART3_Init 1 */
+
+  /* USER CODE END USART3_Init 1 */
+  huart3.Instance = USART3;
+  huart3.Init.BaudRate = 100000;
+  huart3.Init.WordLength = UART_WORDLENGTH_8B;
+  huart3.Init.StopBits = UART_STOPBITS_1;
+  huart3.Init.Parity = UART_PARITY_NONE;
+  huart3.Init.Mode = UART_MODE_TX_RX;
+  huart3.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart3.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART3_Init 2 */
+
+  /* USER CODE END USART3_Init 2 */
+
+}
+
+/**
   * Enable DMA controller clock
   */
 static void MX_DMA_Init(void)
@@ -946,7 +992,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOA, LD2_Pin|GPIO_PIN_6|GPIO_PIN_7, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0|GPIO_PIN_5|GPIO_PIN_8, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0|GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_8, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : B1_Pin */
   GPIO_InitStruct.Pin = B1_Pin;
@@ -976,8 +1022,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PB0 PB5 PB8 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_5|GPIO_PIN_8;
+  /*Configure GPIO pins : PB0 PB5 PB6 PB8 */
+  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_8;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
