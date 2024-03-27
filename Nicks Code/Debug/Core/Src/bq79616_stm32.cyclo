@@ -1,0 +1,6 @@
+../Core/Src/bq79616_stm32.c:34:6:AutoAddress	2
+../Core/Src/bq79616_stm32.c:91:5:WriteReg	9
+../Core/Src/bq79616_stm32.c:165:5:WriteFrame	5
+../Core/Src/bq79616_stm32.c:199:5:ReadReg	8
+../Core/Src/bq79616_stm32.c:260:5:ReadFrameReq	2
+../Core/Src/bq79616_stm32.c:303:10:CRC16	2

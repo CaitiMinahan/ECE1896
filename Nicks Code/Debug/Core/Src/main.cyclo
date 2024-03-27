@@ -1,0 +1,7 @@
+../Core/Src/main.c:81:5:main	1
+../Core/Src/main.c:142:6:SystemClock_Config	3
+../Core/Src/main.c:190:13:MX_UART4_Init	2
+../Core/Src/main.c:224:13:MX_GPIO_Init	1
+../Core/Src/main.c:261:6:WakeBQ79616	3
+../Core/Src/main.c:277:6:ShutdownBQ79616	1
+../Core/Src/main.c:292:6:Error_Handler	1
