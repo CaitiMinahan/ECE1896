@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2024 STMicroelectronics.
+  * Copyright (c) 2023 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -18,10 +18,14 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "app_x-cube-ai.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "ai_platform.h"
+#include "network.h"
+#include "network_data.h"
+#include <stdio.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -40,27 +44,26 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-CAN_HandleTypeDef hcan1;
+CRC_HandleTypeDef hcrc;
 
 UART_HandleTypeDef huart2;
 
-CAN_TxHeaderTypeDef   TxHeader;
-
-uint8_t               TxData[8];
-
-uint32_t              TxMailbox;
-
 /* USER CODE BEGIN PV */
-
+ai_handle network;
+float aiInData[AI_NETWORK_IN_1_SIZE];
+float aiOutData[AI_NETWORK_OUT_1_SIZE];
+ai_u8 activations[AI_NETWORK_DATA_ACTIVATIONS_SIZE];
+ai_buffer * ai_input;
+ai_buffer * ai_output;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_USART2_UART_Init(void);
-static void MX_CAN1_Init(void);
+static void MX_CRC_Init(void);
 /* USER CODE BEGIN PFP */
-
+static void AI_Init(void);
+static void AI_Run(float *pIn, float *pOut);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -75,7 +78,7 @@ static void MX_CAN1_Init(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-//
+
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -84,49 +87,49 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-//
+
   /* USER CODE END Init */
 
   /* Configure the system clock */
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-//
+
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_USART2_UART_Init();
-  MX_CAN1_Init();
-
+  MX_CRC_Init();
+  MX_X_CUBE_AI_Init();
   /* USER CODE BEGIN 2 */
-  TxHeader.IDE = CAN_ID_STD;
-  TxHeader.StdId = 0x446;
-  TxHeader.RTR = CAN_RTR_DATA;
-  TxHeader.DLC = 2;
+  AI_Init();
 
-  TxData[0] = 50;
-  TxData[1] = 0xAA;
-
-  if (HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK)
-  {
-     Error_Handler ();
-  }
+  char ResultStr[8];
+  sprintf(ResultStr, "aiInData[0] aiInData[1] aiOutData[0] aiOutData[1]\r\n");
+  HAL_UART_Transmit(&huart2, (uint8_t*)ResultStr, sizeof(ResultStr), 100);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-//  while (1)
-//  {
-////	  HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-//	  HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13);
-//	  HAL_UART_Transmit()
-////	  HAL_Delay(1000);
-    /* USER CODE END WHILE */
+  while (1)
+  {
+	// Set the values hardcoded (for now)
+    aiInData[0] = 3.0;
+    aiInData[1] = 1.0;
 
+    // Run Inference
+    AI_Run(aiInData, aiOutData);
+
+    // Convert to something we can send over UART and Transmit
+    char ResultStr[8];
+	sprintf(ResultStr, "%f %f %f %f\r\n", aiInData[0], aiInData[1], aiOutData[0], aiOutData[1]);
+	HAL_UART_Transmit(&huart2, (uint8_t*)ResultStr, sizeof(ResultStr), 100);
+
+	/* USER CODE END WHILE */
+
+  MX_X_CUBE_AI_Process();
     /* USER CODE BEGIN 3 */
-//  }
-
+  }
   /* USER CODE END 3 */
 }
 
@@ -180,54 +183,33 @@ void SystemClock_Config(void)
 }
 
 /**
-  * @brief CAN1 Initialization Function
+  * @brief CRC Initialization Function
   * @param None
   * @retval None
   */
-static void MX_CAN1_Init(void)
+static void MX_CRC_Init(void)
 {
 
-  /* USER CODE BEGIN CAN1_Init 0 */
+  /* USER CODE BEGIN CRC_Init 0 */
 
-  /* USER CODE END CAN1_Init 0 */
+  /* USER CODE END CRC_Init 0 */
 
-  /* USER CODE BEGIN CAN1_Init 1 */
+  /* USER CODE BEGIN CRC_Init 1 */
 
-  /* USER CODE END CAN1_Init 1 */
-  hcan1.Instance = CAN1;
-  hcan1.Init.Prescaler = 18;
-  hcan1.Init.Mode = CAN_MODE_NORMAL;
-  hcan1.Init.SyncJumpWidth = CAN_SJW_1TQ;
-  hcan1.Init.TimeSeg1 = CAN_BS1_2TQ;
-  hcan1.Init.TimeSeg2 = CAN_BS2_2TQ;
-  hcan1.Init.TimeTriggeredMode = DISABLE;
-  hcan1.Init.AutoBusOff = DISABLE;
-  hcan1.Init.AutoWakeUp = DISABLE;
-  hcan1.Init.AutoRetransmission = DISABLE;
-  hcan1.Init.ReceiveFifoLocked = DISABLE;
-  hcan1.Init.TransmitFifoPriority = DISABLE;
-  if (HAL_CAN_Init(&hcan1) != HAL_OK)
+  /* USER CODE END CRC_Init 1 */
+  hcrc.Instance = CRC;
+  hcrc.Init.DefaultPolynomialUse = DEFAULT_POLYNOMIAL_ENABLE;
+  hcrc.Init.DefaultInitValueUse = DEFAULT_INIT_VALUE_ENABLE;
+  hcrc.Init.InputDataInversionMode = CRC_INPUTDATA_INVERSION_NONE;
+  hcrc.Init.OutputDataInversionMode = CRC_OUTPUTDATA_INVERSION_DISABLE;
+  hcrc.InputDataFormat = CRC_INPUTDATA_FORMAT_BYTES;
+  if (HAL_CRC_Init(&hcrc) != HAL_OK)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN CAN1_Init 2 */
+  /* USER CODE BEGIN CRC_Init 2 */
 
-  CAN_FilterTypeDef canfilterconfig;
-
-  canfilterconfig.FilterActivation = CAN_FILTER_ENABLE;
-  canfilterconfig.FilterBank = 18;  // which filter bank to use from the assigned ones
-  canfilterconfig.FilterFIFOAssignment = CAN_FILTER_FIFO0;
-  canfilterconfig.FilterIdHigh = 0x446<<5;
-  canfilterconfig.FilterIdLow = 0;
-  canfilterconfig.FilterMaskIdHigh = 0x446<<5;
-  canfilterconfig.FilterMaskIdLow = 0x0000;
-  canfilterconfig.FilterMode = CAN_FILTERMODE_IDMASK;
-  canfilterconfig.FilterScale = CAN_FILTERSCALE_32BIT;
-  canfilterconfig.SlaveStartFilterBank = 20;  // how many filters to assign to the CAN1 (master can)
-
-  HAL_CAN_ConfigFilter(&hcan1, &canfilterconfig);
-
-  /* USER CODE END CAN1_Init 2 */
+  /* USER CODE END CRC_Init 2 */
 
 }
 
@@ -236,7 +218,7 @@ static void MX_CAN1_Init(void)
   * @param None
   * @retval None
   */
-static void MX_USART2_UART_Init(void)
+void MX_USART2_UART_Init(void)
 {
 
   /* USER CODE BEGIN USART2_Init 0 */
@@ -304,7 +286,34 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+static void AI_Init(void){
+	ai_error err;
 
+	// Create a local array with the addresses of the activations buffers
+	const ai_handle act_addr[] = { activations };
+	// Create an instance of the model
+	err = ai_network_create_and_init(&network, act_addr, NULL);
+	if (err.type != AI_ERROR_NONE){
+		Error_Handler();
+	}
+	ai_input = ai_network_inputs_get(network, NULL);
+	ai_output = ai_network_outputs_get(network, NULL);
+}
+
+static void AI_Run(float *pIn, float *pOut){
+	ai_i32 batch;
+	ai_error err;
+
+	// Update IO handlers with the data payload
+	ai_input[0].data = AI_HANDLE_PTR(pIn);
+	ai_output[0].data = AI_HANDLE_PTR(pOut);
+
+	batch = ai_network_run(network, ai_input, ai_output);
+	if (batch != 1){
+		err = ai_network_get_error(network);
+		Error_Handler();
+	}
+}
 /* USER CODE END 4 */
 
 /**
