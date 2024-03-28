@@ -27,6 +27,7 @@
 #include "network_data.h"
 #include <stdio.h>
 #include <stdbool.h>
+#include "bq79616_stm32.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -48,13 +49,17 @@
 #define POS_CON_INPUT_GPIO		GPIOC
 #define POS_CON_INPUT_PIN		GPIO_PIN_0
 
+#define BQ79616_GPIO			GPIOC
+#define BQ79616_PIN				10
+
 #define ANALOG_INPUT_GPIO		GPIOA
 #define ANALOG_INPUT_PIN		GPIO_PIN_0
 
 #define NEG_LSD_OUTPUT_GPIO		GPIOC
 #define NEG_LSD_OUTPUT_PIN		GPIO_PIN_12
-#define NEG_LSD_INPUT_GPIO		GPIOC
-#define NEG_LSD_INPUT_PIN		GPIO_PIN_10
+// TODO: This has changed to use UART 4 TX on Master Board
+#define NEG_LSD_INPUT_GPIO		GPIOB 		//GPIOC
+#define NEG_LSD_INPUT_PIN		GPIO_PIN_7  //GPIO_PIN_10
 
 #define NEG_HSD_OUTPUT_GPIO		GPIOB
 #define NEG_HSD_OUTPUT_PIN		GPIO_PIN_8
@@ -64,8 +69,9 @@
 #define NEG_CON_INPUT_GPIO		GPIOA
 #define NEG_CON_INPUT_PIN		GPIO_PIN_15
 
-#define PRE_LSD_OUTPUT_GPIO		GPIOC
-#define PRE_LSD_OUTPUT_PIN		GPIO_PIN_11
+// TODO: This has changed to use UART 4 RX on Master Board
+#define PRE_LSD_OUTPUT_GPIO		GPIOA		//GPIOC
+#define PRE_LSD_OUTPUT_PIN		GPIO_PIN_10 //GPIO_PIN_11
 #define PRE_LSD_INPUT_GPIO		GPIOD
 #define PRE_LSD_INPUT_PIN		GPIO_PIN_2
 
@@ -86,6 +92,16 @@
 #define MAX_TEMP 				60    // Maximum (surface) Temperature of a cell
 #define TSREF_ADC				5	  // Reference voltage for thermistor
 #define TS_R1					10000 // Reference series resistance for themistor
+
+// Microsecond Delay Function
+#define SYSTICK_LOAD (SystemCoreClock/1000000U)
+#define SYSTICK_DELAY_CALIB (SYSTICK_LOAD >> 1)
+#define DELAY_US(us) \
+	do	{	\
+		uint32_t start = SysTick->VAL; \
+		uint32_t ticks = (us * SYSTICK_LOAD)-SYSTICK_DELAY_CALIB; \
+		while((start - SysTick->VAL) < ticks); \
+	} while (0)
 
 // TODO: Remove 3 and replace with comment
 const int8_t PRE_CHG_PACK_VOLT = 3; //SERIES_MOD * SERIES_CELL * MAX_VOLT;
@@ -176,6 +192,7 @@ uint16_t getCellFaults(Cell* cell){
 }
 
 void setCellFaults(Cell* cell, CellFault value) {
+	// TODO: Determine which faults require shutting down the BMS
     // Extract the boolean values
     if (value & POWER_RAIL_FAULT) cell->power_rail = true;
     if (value & COMM_FAULT) cell->comm = true;
@@ -231,8 +248,8 @@ CAN_HandleTypeDef hcan1;
 
 CRC_HandleTypeDef hcrc;
 
+UART_HandleTypeDef huart4;
 UART_HandleTypeDef huart2;
-UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN PV */
 ai_handle network;
@@ -250,25 +267,27 @@ static void MX_DMA_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_CAN1_Init(void);
 static void MX_CRC_Init(void);
-static void MX_USART3_UART_Init(void);
+static void MX_UART4_Init(void);
 /* USER CODE BEGIN PFP */
 static void AI_Init(void);
 static void AI_Run(float *pIn, float *pOut);
+void WakeBQ79616(void);
+void ShutdownBQ79616(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+// Start CAN Messaging
 CAN_TxHeaderTypeDef TxHeader;
 CAN_RxHeaderTypeDef RxHeader;
-
 uint8_t TxData[8];
 uint8_t RxData[8];
-
 uint32_t TxMailbox;
+// End CAN Messaging
 
+// Start Analog Capture
 uint16_t cell_analog_values[3];
 char msg[30];  // message box for analog values
-
 float pre_charge_voltage; 	 // Measurement for startupSequence
 float cell_voltage; 	  	 // Measurement for checkVIT
 float cell_current; 	  	 // Calculated current from checkVIT
@@ -276,11 +295,36 @@ float thermistor_resistance; // Calculated unknown resistance from checkVIT
 float cell_vref; 			 // measurement voltage for vref
 float soc; 					 // State of Charge
 float sop; 					 // State of Power
+// End Analog Capture
+
+// Start BMS Functions
+void WakeBQ79616(void)
+{
+	BQ79616_GPIO->MODER &= ~(0b11 << (BQ79616_PIN*2)); // clear the GPIO MODE to 00
+	BQ79616_GPIO->MODER |= (0b10 << (BQ79616_PIN*2)); // Sets the mode of PC10 to alternate function
+	BQ79616_GPIO->AFR[2] &= ~(0b1111<<(12)); //sets Alternate function for PC10 to AF8
+	BQ79616_GPIO->ODR &= ~(0b1 <<(BQ79616_PIN)); // output 0 when in gpio mode
+	BQ79616_GPIO->MODER ^= (0b11 << (BQ79616_PIN*2)); // GPIO MODE
+	HAL_Delay(2); // Use Veronica's Delay Function
+//	DELAY_US(2500);
+//	DELAY_US(2500);
+	BQ79616_GPIO->MODER ^= (0b11 << (BQ79616_PIN*2)); // AF
+}
+
+void ShutdownBQ79616(void)
+{
+	BQ79616_GPIO->MODER ^= (0b11 << (BQ79616_PIN*2)); // GPIO
+	HAL_Delay(8);
+	BQ79616_GPIO->MODER ^= (0b11 << (BQ79616_PIN*2));
+}
+// End BMS Functions
 
 int startupSequence(void){
 	//
-	// BMS Wakeup - Done in UART3
+	// BMS Wakeup
 	//
+
+	WakeBQ79616();
 
     // TODO: Implement Auto Addressing
 	// Write Control1[SEND_WAKE] = 1 to BQ79600-Q1
@@ -527,8 +571,6 @@ void checkStatusTransmit(Cell* cell){
 
 	// Delay for debug
 //	HAL_Delay(1000);
-
-	return 0;
 }
 /* USER CODE END 0 */
 
@@ -573,7 +615,7 @@ int main(void)
   MX_ADC1_Init();
   MX_CAN1_Init();
   MX_CRC_Init();
-  MX_USART3_UART_Init();
+  MX_UART4_Init();
   MX_X_CUBE_AI_Init();
   /* USER CODE BEGIN 2 */
   // Start Ai Inference Model
@@ -602,7 +644,6 @@ int main(void)
 
   if (success == -1) { HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, 1); }
 
-
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -612,7 +653,7 @@ int main(void)
   {
     /* USER CODE END WHILE */
 
-//  MX_X_CUBE_AI_Process();
+  MX_X_CUBE_AI_Process();
     /* USER CODE BEGIN 3 */
       // Loop through every cell in the pack for every module
 	  for (int i = 0; i < sizeof(module1) / sizeof(module1[0]); i++){
@@ -873,6 +914,39 @@ static void MX_CRC_Init(void)
 }
 
 /**
+  * @brief UART4 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_UART4_Init(void)
+{
+
+  /* USER CODE BEGIN UART4_Init 0 */
+
+  /* USER CODE END UART4_Init 0 */
+
+  /* USER CODE BEGIN UART4_Init 1 */
+
+  /* USER CODE END UART4_Init 1 */
+  huart4.Instance = UART4;
+  huart4.Init.BaudRate = 1000000;
+  huart4.Init.WordLength = UART_WORDLENGTH_8B;
+  huart4.Init.StopBits = UART_STOPBITS_1;
+  huart4.Init.Parity = UART_PARITY_NONE;
+  huart4.Init.Mode = UART_MODE_TX_RX;
+  huart4.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart4.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_HalfDuplex_Init(&huart4) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN UART4_Init 2 */
+
+  /* USER CODE END UART4_Init 2 */
+
+}
+
+/**
   * @brief USART2 Initialization Function
   * @param None
   * @retval None
@@ -902,52 +976,6 @@ void MX_USART2_UART_Init(void)
   /* USER CODE BEGIN USART2_Init 2 */
 
   /* USER CODE END USART2_Init 2 */
-
-}
-
-/**
-  * @brief USART3 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_USART3_UART_Init(void)
-{
-
-  /* USER CODE BEGIN USART3_Init 0 */
-    // Send a low signal to wake up BMS
-   	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET);
-
-	// Delay 2.75ms
-	HAL_Delay(2.75);
-
-	// Send high signal
-	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);
-
-	// Delay at least 3.5ms
-	HAL_Delay(4);
-
-	//Drop GPIO low to not interfere with UART
-	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET);
-  /* USER CODE END USART3_Init 0 */
-
-  /* USER CODE BEGIN USART3_Init 1 */
-
-  /* USER CODE END USART3_Init 1 */
-  huart3.Instance = USART3;
-  huart3.Init.BaudRate = 100000;
-  huart3.Init.WordLength = UART_WORDLENGTH_8B;
-  huart3.Init.StopBits = UART_STOPBITS_1;
-  huart3.Init.Parity = UART_PARITY_NONE;
-  huart3.Init.Mode = UART_MODE_TX_RX;
-  huart3.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart3.Init.OverSampling = UART_OVERSAMPLING_16;
-  if (HAL_UART_Init(&huart3) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN USART3_Init 2 */
-
-  /* USER CODE END USART3_Init 2 */
 
 }
 
@@ -986,10 +1014,10 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3|GPIO_PIN_11|GPIO_PIN_12, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3|GPIO_PIN_12, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, LD2_Pin|GPIO_PIN_6|GPIO_PIN_7, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, LD2_Pin|GPIO_PIN_6|GPIO_PIN_7|GPIO_PIN_10, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0|GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_8, GPIO_PIN_RESET);
@@ -1000,23 +1028,21 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PC0 PC1 PC2 PC9
-                           PC10 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_9
-                          |GPIO_PIN_10;
+  /*Configure GPIO pins : PC0 PC1 PC2 PC9 */
+  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_9;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PC3 PC11 PC12 */
-  GPIO_InitStruct.Pin = GPIO_PIN_3|GPIO_PIN_11|GPIO_PIN_12;
+  /*Configure GPIO pins : PC3 PC12 */
+  GPIO_InitStruct.Pin = GPIO_PIN_3|GPIO_PIN_12;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : LD2_Pin PA6 PA7 */
-  GPIO_InitStruct.Pin = LD2_Pin|GPIO_PIN_6|GPIO_PIN_7;
+  /*Configure GPIO pins : LD2_Pin PA6 PA7 PA10 */
+  GPIO_InitStruct.Pin = LD2_Pin|GPIO_PIN_6|GPIO_PIN_7|GPIO_PIN_10;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -1041,8 +1067,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PB4 PB9 */
-  GPIO_InitStruct.Pin = GPIO_PIN_4|GPIO_PIN_9;
+  /*Configure GPIO pins : PB4 PB7 PB9 */
+  GPIO_InitStruct.Pin = GPIO_PIN_4|GPIO_PIN_7|GPIO_PIN_9;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);

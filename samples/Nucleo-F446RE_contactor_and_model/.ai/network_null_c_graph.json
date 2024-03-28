@@ -790,7 +790,7 @@
         }
     ],
     "c_activations_count": 1,
-    "date_time": "Wed Mar 20 21:44:27 2024",
+    "date_time": "Thu Mar 28 11:02:23 2024",
     "model_name": "soc_lstm",
     "tool_version": {
         "major": 1,

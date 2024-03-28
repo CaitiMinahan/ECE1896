@@ -1,4 +1,5 @@
-Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
+Core/Src/bq79616_stm32.o: ../Core/Src/bq79616_stm32.c \
+ ../Core/Inc/bq79616_stm32.h ../Core/Inc/datatypes.h ../Core/Inc/main.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h \
  ../Core/Inc/stm32f4xx_hal_conf.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h \
@@ -30,11 +31,9 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr_ex.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
- ../X-CUBE-AI/App/app_x-cube-ai.h ../Middlewares/ST/AI/Inc/ai_platform.h \
- ../X-CUBE-AI/App/network.h ../X-CUBE-AI/App/network_config.h \
- ../X-CUBE-AI/App/network_data.h ../X-CUBE-AI/App/network_data_params.h \
- ../Core/Inc/bq79616_stm32.h ../Core/Inc/datatypes.h ../Core/Inc/main.h \
- ../Core/Inc/BQ_reg.h
+ ../Core/Inc/BQ_reg.h ../Core/Inc/datatypes.h
+../Core/Inc/bq79616_stm32.h:
+../Core/Inc/datatypes.h:
 ../Core/Inc/main.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:
 ../Core/Inc/stm32f4xx_hal_conf.h:
@@ -67,13 +66,5 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr_ex.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h:
-../X-CUBE-AI/App/app_x-cube-ai.h:
-../Middlewares/ST/AI/Inc/ai_platform.h:
-../X-CUBE-AI/App/network.h:
-../X-CUBE-AI/App/network_config.h:
-../X-CUBE-AI/App/network_data.h:
-../X-CUBE-AI/App/network_data_params.h:
-../Core/Inc/bq79616_stm32.h:
-../Core/Inc/datatypes.h:
-../Core/Inc/main.h:
 ../Core/Inc/BQ_reg.h:
+../Core/Inc/datatypes.h:
